@@ -71,8 +71,8 @@ public class CategoryService {
 
         Category updated = new Category(
                 existingOption.getCategoryId(),
-                request.getName(),
-                request.getDescription(),
+                request.getName() == null ? existingOption.getName() : request.getName(),
+                request.getDescription() == null ? existingOption.getDescription() : request.getDescription(),
                 existingOption.getCreatedAt(),
                 Instant.now()
         );
