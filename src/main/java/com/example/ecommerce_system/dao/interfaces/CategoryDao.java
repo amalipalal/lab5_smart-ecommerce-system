@@ -91,4 +91,12 @@ public interface CategoryDao {
      */
     int count(Connection connection) throws DaoException;
 
+    /**
+     * Delete a category by id.
+     *
+     * @param connection the {@link java.sql.Connection} to use
+     * @param id identifier of the category to delete
+     * @throws DaoException on Dao errors
+     */
+    void delete(Connection connection, UUID id) throws DaoException;
 }

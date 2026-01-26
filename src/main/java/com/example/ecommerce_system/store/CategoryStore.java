@@ -193,4 +193,33 @@ public class CategoryStore {
             throw new DatabaseConnectionException(e);
         }
     }
+
+    /**
+     * Delete a category by id inside a transaction.
+     *
+     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#delete(java.sql.Connection, java.util.UUID)}.
+     * On success this method evicts relevant entries in the "categories" cache via Spring Cache.
+     *
+     * @param id identifier of the category to delete
+     * @throws com.example.ecommerce_system.exception.CategoryDeletionException when the category has products or deletion fails
+     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
+     */
+    @CacheEvict(value = "categories", allEntries = true)
+    public void deleteCategory(UUID id) {
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                categoryDao.delete(conn, id);
+                conn.commit();
+            } catch (CategoryDeletionException e) {
+                try { conn.rollback(); } catch (SQLException ignore) {}
+                throw e;
+            } catch (DaoException e) {
+                try { conn.rollback(); } catch (SQLException ignore) {}
+                throw new CategoryDeletionException(id.toString(), e);
+            }
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
+    }
 }

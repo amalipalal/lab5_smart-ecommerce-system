@@ -2,11 +2,13 @@ package com.example.ecommerce_system.dao.impl;
 
 import com.example.ecommerce_system.dao.interfaces.CategoryDao;
 import com.example.ecommerce_system.exception.DaoException;
+import com.example.ecommerce_system.exception.CategoryDeletionException;
 import com.example.ecommerce_system.model.Category;
 import com.example.ecommerce_system.dao.interfaces.StatementPreparer;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +26,7 @@ public class CategoryJdbcDao implements CategoryDao {
     private static final String FIND_BY_NAME = """
             SELECT category_id, name, description, created_at, updated_at
             FROM category
-            WHERE name = ?
+            WHERE LOWER(name) = LOWER(?)
             """;
 
     private static final String SEARCH_BY_NAME = """
@@ -62,6 +64,11 @@ public class CategoryJdbcDao implements CategoryDao {
 
     private static final String COUNT = """
             SELECT COUNT(*) FROM category
+            """;
+
+    private static final String DELETE = """
+            DELETE FROM category
+            WHERE category_id = ?
             """;
 
     @Override
@@ -201,6 +208,19 @@ public class CategoryJdbcDao implements CategoryDao {
             }
         } catch (SQLException e) {
             throw new DaoException("Failed to get category count.", e);
+        }
+    }
+
+    @Override
+    public void delete(Connection conn, UUID categoryId) throws DaoException {
+        try (PreparedStatement ps = conn.prepareStatement(DELETE)) {
+            ps.setObject(1, categoryId);
+            ps.executeUpdate();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            // Constraint violation -> category has dependent products
+            throw new CategoryDeletionException(categoryId.toString());
+        } catch (SQLException e) {
+            throw new DaoException("Failed to delete category " + categoryId, e);
         }
     }
 }

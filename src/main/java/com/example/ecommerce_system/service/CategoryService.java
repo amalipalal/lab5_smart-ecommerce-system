@@ -130,4 +130,18 @@ public class CategoryService {
         List<Category> categories = categoryStore.findAll(limit, offset);
         return categories.stream().map(this::map).toList();
     }
+
+    /**
+     * Delete a category by id.
+     *
+     * Ensures the category exists, then delegates to {@link com.example.ecommerce_system.store.CategoryStore#deleteCategory(java.util.UUID)}.
+     *
+     * @param id category UUID
+     * @throws com.example.ecommerce_system.exception.CategoryNotFoundException if not found
+     * @throws com.example.ecommerce_system.exception.CategoryDeletionException when deletion is not possible
+     */
+    public void deleteCategory(UUID id) {
+        categoryStore.getCategory(id).orElseThrow(() -> new CategoryNotFoundException(id.toString()));
+        categoryStore.deleteCategory(id);
+    }
 }
