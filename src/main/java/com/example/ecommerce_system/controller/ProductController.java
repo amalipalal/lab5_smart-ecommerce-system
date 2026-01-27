@@ -1,6 +1,6 @@
 package com.example.ecommerce_system.controller;
 
-import com.example.ecommerce_system.dto.ProductFilter;
+import com.example.ecommerce_system.dto.product.ProductFilter;
 import com.example.ecommerce_system.dto.SuccessResponseDto;
 import com.example.ecommerce_system.dto.product.CreateProductRequest;
 import com.example.ecommerce_system.dto.product.ProductRequestDto;

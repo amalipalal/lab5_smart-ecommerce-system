@@ -1,9 +1,10 @@
 package com.example.ecommerce_system.service;
 
-import com.example.ecommerce_system.dto.CategoryRequestDto;
-import com.example.ecommerce_system.dto.CategoryResponseDto;
-import com.example.ecommerce_system.exception.CategoryNotFoundException;
-import com.example.ecommerce_system.exception.DuplicateCategoryException;
+import com.example.ecommerce_system.dto.category.CategoryRequestDto;
+import com.example.ecommerce_system.dto.category.CategoryResponseDto;
+import com.example.ecommerce_system.exception.category.CategoryNotFoundException;
+import com.example.ecommerce_system.exception.category.CategoryDeletionException;
+import com.example.ecommerce_system.exception.category.DuplicateCategoryException;
 import com.example.ecommerce_system.model.Category;
 import com.example.ecommerce_system.store.CategoryStore;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ public class CategoryService {
      *
      * @param request request DTO containing name and description
      * @return created {@link CategoryResponseDto}
-     * @throws com.example.ecommerce_system.exception.DuplicateCategoryException if a category with the same name exists
+     * @throws DuplicateCategoryException if a category with the same name exists
      */
     public CategoryResponseDto createCategory(CategoryRequestDto request) {
         Optional<Category> existing = categoryStore.getCategoryByName(request.getName());
@@ -59,8 +60,8 @@ public class CategoryService {
      * @param id      identifier of the category to update
      * @param request request DTO with updated values
      * @return updated {@link CategoryResponseDto}
-     * @throws com.example.ecommerce_system.exception.CategoryNotFoundException if the category does not exist
-     * @throws com.example.ecommerce_system.exception.DuplicateCategoryException if the new name conflicts with an existing category
+     * @throws CategoryNotFoundException if the category does not exist
+     * @throws com.example.ecommerce_system.exception.category.DuplicateCategoryException if the new name conflicts with an existing category
      */
     public CategoryResponseDto updateCategory(UUID id, CategoryRequestDto request) {
         Category existingOption = categoryStore.getCategory(id).orElseThrow(
@@ -85,7 +86,7 @@ public class CategoryService {
      *
      * @param id category UUID
      * @return {@link CategoryResponseDto}
-     * @throws com.example.ecommerce_system.exception.CategoryNotFoundException if not found
+     * @throws CategoryNotFoundException if not found
      */
     public CategoryResponseDto getCategory(UUID id) {
         Category category = categoryStore.getCategory(id)
@@ -98,7 +99,7 @@ public class CategoryService {
      *
      * @param name category name
      * @return {@link CategoryResponseDto}
-     * @throws com.example.ecommerce_system.exception.CategoryNotFoundException if not found
+     * @throws com.example.ecommerce_system.exception.category.CategoryNotFoundException if not found
      */
     public CategoryResponseDto getCategory(String name) {
         Category category = categoryStore.getCategoryByName(name)
@@ -137,8 +138,8 @@ public class CategoryService {
      * Ensures the category exists, then delegates to {@link com.example.ecommerce_system.store.CategoryStore#deleteCategory(java.util.UUID)}.
      *
      * @param id category UUID
-     * @throws com.example.ecommerce_system.exception.CategoryNotFoundException if not found
-     * @throws com.example.ecommerce_system.exception.CategoryDeletionException when deletion is not possible
+     * @throws com.example.ecommerce_system.exception.category.CategoryNotFoundException if not found
+     * @throws CategoryDeletionException when deletion is not possible
      */
     public void deleteCategory(UUID id) {
         categoryStore.getCategory(id).orElseThrow(() -> new CategoryNotFoundException(id.toString()));

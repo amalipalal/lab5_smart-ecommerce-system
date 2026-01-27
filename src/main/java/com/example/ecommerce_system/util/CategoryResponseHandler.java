@@ -1,9 +1,9 @@
 package com.example.ecommerce_system.util;
 
 import com.example.ecommerce_system.dto.ErrorResponseDto;
-import com.example.ecommerce_system.exception.CategoryNotFoundException;
-import com.example.ecommerce_system.exception.DuplicateCategoryException;
-import com.example.ecommerce_system.exception.CategoryDeletionException;
+import com.example.ecommerce_system.exception.category.CategoryNotFoundException;
+import com.example.ecommerce_system.exception.category.DuplicateCategoryException;
+import com.example.ecommerce_system.exception.category.CategoryDeletionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,6 +1,7 @@
 package com.example.ecommerce_system.store;
 
 import com.example.ecommerce_system.dao.interfaces.CategoryDao;
+import com.example.ecommerce_system.exception.category.*;
 import com.example.ecommerce_system.model.Category;
 import com.example.ecommerce_system.exception.*;
 import lombok.AllArgsConstructor;
@@ -30,7 +31,7 @@ public class CategoryStore {
      *
      * @param category the category to create
      * @return the persisted {@link com.example.ecommerce_system.model.Category}
-     * @throws com.example.ecommerce_system.exception.CategoryCreationException when Dao persistence fails
+     * @throws CategoryCreationException when Dao persistence fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "categories", allEntries = true)
@@ -59,7 +60,7 @@ public class CategoryStore {
      *
      * @param category the category with updated fields
      * @return the updated {@link com.example.ecommerce_system.model.Category}
-     * @throws com.example.ecommerce_system.exception.CategoryUpdateException when DAO update fails
+     * @throws CategoryUpdateException when DAO update fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "categories", allEntries = true)
@@ -88,7 +89,7 @@ public class CategoryStore {
      *
      * @param id category identifier
      * @return an {@link Optional} containing the Category when found
-     * @throws com.example.ecommerce_system.exception.CategoryRetrievalException when DAO retrieval fails
+     * @throws CategoryRetrievalException when DAO retrieval fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'category:' + #id")
@@ -111,7 +112,7 @@ public class CategoryStore {
      *
      * @param name category name
      * @return an {@link Optional} containing the Category when found
-     * @throws com.example.ecommerce_system.exception.CategoryRetrievalException when DAO retrieval fails
+     * @throws CategoryRetrievalException when DAO retrieval fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'name:' + #name")
@@ -135,7 +136,7 @@ public class CategoryStore {
      * @param limit maximum results
      * @param offset zero-based offset
      * @return list of matching {@link com.example.ecommerce_system.model.Category}
-     * @throws com.example.ecommerce_system.exception.CategorySearchException when DAO search fails
+     * @throws CategorySearchException when DAO search fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'search:' + #query + ':' + #limit + ':' + #offset")
@@ -158,7 +159,7 @@ public class CategoryStore {
      * @param limit  maximum number of categories to return
      * @param offset zero-based offset for paging
      * @return list of {@link com.example.ecommerce_system.model.Category} for the requested page
-     * @throws com.example.ecommerce_system.exception.CategoryRetrievalException when DAO retrieval fails
+     * @throws CategoryRetrievalException when DAO retrieval fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'all:' + #limit + ':' + #offset")
@@ -201,7 +202,7 @@ public class CategoryStore {
      * On success this method evicts relevant entries in the "categories" cache via Spring Cache.
      *
      * @param id identifier of the category to delete
-     * @throws com.example.ecommerce_system.exception.CategoryDeletionException when the category has products or deletion fails
+     * @throws CategoryDeletionException when the category has products or deletion fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "categories", allEntries = true)

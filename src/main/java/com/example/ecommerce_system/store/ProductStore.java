@@ -3,7 +3,7 @@ package com.example.ecommerce_system.store;
 import com.example.ecommerce_system.dao.interfaces.ProductDao;
 import com.example.ecommerce_system.exception.product.*;
 import com.example.ecommerce_system.model.Product;
-import com.example.ecommerce_system.dto.ProductFilter;
+import com.example.ecommerce_system.dto.product.ProductFilter;
 import com.example.ecommerce_system.exception.*;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -152,9 +152,9 @@ public class ProductStore {
     }
 
     /**
-     * Search products using a {@link com.example.ecommerce_system.dto.ProductFilter} with paging.
+     * Search products using a {@link ProductFilter} with paging.
      *
-     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#findFiltered(java.sql.Connection, com.example.ecommerce_system.dto.ProductFilter, int, int)}.
+     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#findFiltered(java.sql.Connection, ProductFilter, int, int)}.
      * Results are cached in the "products" cache using Spring Cache.
      *
      * @param filter filter criteria
@@ -178,7 +178,7 @@ public class ProductStore {
     /**
      * Count products matching a filter.
      *
-     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#countFiltered(java.sql.Connection, com.example.ecommerce_system.dto.ProductFilter)}.
+     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#countFiltered(java.sql.Connection, ProductFilter)}.
      * Results are cached in the "products" cache using Spring Cache.
      *
      * @param filter filter criteria

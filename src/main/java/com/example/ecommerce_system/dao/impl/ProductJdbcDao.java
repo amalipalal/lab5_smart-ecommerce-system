@@ -1,7 +1,7 @@
 package com.example.ecommerce_system.dao.impl;
 
 import com.example.ecommerce_system.dao.interfaces.ProductDao;
-import com.example.ecommerce_system.dto.ProductFilter;
+import com.example.ecommerce_system.dto.product.ProductFilter;
 import com.example.ecommerce_system.exception.DaoException;
 import com.example.ecommerce_system.model.Product;
 import com.example.ecommerce_system.util.SqlAndParams;

@@ -1,10 +1,10 @@
 package com.example.ecommerce_system;
 
-import com.example.ecommerce_system.dto.CategoryRequestDto;
-import com.example.ecommerce_system.dto.CategoryResponseDto;
-import com.example.ecommerce_system.exception.CategoryNotFoundException;
-import com.example.ecommerce_system.exception.DuplicateCategoryException;
-import com.example.ecommerce_system.exception.CategoryDeletionException;
+import com.example.ecommerce_system.dto.category.CategoryRequestDto;
+import com.example.ecommerce_system.dto.category.CategoryResponseDto;
+import com.example.ecommerce_system.exception.category.CategoryNotFoundException;
+import com.example.ecommerce_system.exception.category.DuplicateCategoryException;
+import com.example.ecommerce_system.exception.category.CategoryDeletionException;
 import com.example.ecommerce_system.model.Category;
 import com.example.ecommerce_system.service.CategoryService;
 import com.example.ecommerce_system.store.CategoryStore;

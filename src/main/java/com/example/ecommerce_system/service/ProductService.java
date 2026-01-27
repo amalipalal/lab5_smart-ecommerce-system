@@ -1,9 +1,9 @@
 package com.example.ecommerce_system.service;
 
-import com.example.ecommerce_system.dto.ProductFilter;
+import com.example.ecommerce_system.dto.product.ProductFilter;
 import com.example.ecommerce_system.dto.product.ProductRequestDto;
 import com.example.ecommerce_system.dto.product.ProductResponseDto;
-import com.example.ecommerce_system.exception.CategoryNotFoundException;
+import com.example.ecommerce_system.exception.category.CategoryNotFoundException;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
 import com.example.ecommerce_system.model.Product;
 import com.example.ecommerce_system.store.CategoryStore;
@@ -86,7 +86,7 @@ public class ProductService {
     /**
      * Count products matching a filter.
      *
-     * @param filter the {@link com.example.ecommerce_system.dto.ProductFilter} criteria
+     * @param filter the {@link ProductFilter} criteria
      * @return number of products matching the filter
      */
     public int countProductsByFilter(ProductFilter filter) {
@@ -111,9 +111,9 @@ public class ProductService {
     /**
      * Search for products using a filter with paging.
      *
-     * Delegates to {@link com.example.ecommerce_system.store.ProductStore#searchProducts(com.example.ecommerce_system.dto.ProductFilter, int, int)}.
+     * Delegates to {@link com.example.ecommerce_system.store.ProductStore#searchProducts(ProductFilter, int, int)}.
      *
-     * @param filter the {@link com.example.ecommerce_system.dto.ProductFilter} to apply
+     * @param filter the {@link ProductFilter} to apply
      * @param limit  maximum number of results
      * @param offset zero-based offset for paging
      * @return list of {@link com.example.ecommerce_system.dto.product.ProductResponseDto}

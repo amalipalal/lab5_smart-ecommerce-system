@@ -2,7 +2,7 @@ package com.example.ecommerce_system.dao.impl;
 
 import com.example.ecommerce_system.dao.interfaces.CategoryDao;
 import com.example.ecommerce_system.exception.DaoException;
-import com.example.ecommerce_system.exception.CategoryDeletionException;
+import com.example.ecommerce_system.exception.category.CategoryDeletionException;
 import com.example.ecommerce_system.model.Category;
 import com.example.ecommerce_system.dao.interfaces.StatementPreparer;
 import org.springframework.stereotype.Repository;

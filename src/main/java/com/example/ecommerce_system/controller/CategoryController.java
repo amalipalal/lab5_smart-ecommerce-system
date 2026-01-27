@@ -1,6 +1,10 @@
 package com.example.ecommerce_system.controller;
 
 import com.example.ecommerce_system.dto.*;
+import com.example.ecommerce_system.dto.category.CategoryRequestDto;
+import com.example.ecommerce_system.dto.category.CategoryResponseDto;
+import com.example.ecommerce_system.dto.category.CreateCategoryRequest;
+import com.example.ecommerce_system.dto.category.UpdateCategoryRequest;
 import com.example.ecommerce_system.service.CategoryService;
 import com.example.ecommerce_system.util.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
