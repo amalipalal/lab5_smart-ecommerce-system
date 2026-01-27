@@ -43,6 +43,7 @@ public class ProductService {
     private ProductResponseDto map(Product product) {
         return ProductResponseDto.builder()
                 .productId(product.getProductId())
+                .categoryId(product.getCategoryId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
@@ -65,6 +66,11 @@ public class ProductService {
         Product product = this.productStore.getProduct(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
         return map(product);
+    }
+
+    public List<ProductResponseDto> getAllProducts(int limit, int offset) {
+        List<Product> products = this.productStore.getAllProducts(limit, offset);
+        return products.stream().map(this::map).toList();
     }
 
     /**
@@ -117,7 +123,7 @@ public class ProductService {
      * @param request   the incoming {@link com.example.ecommerce_system.dto.product.ProductRequestDto} with optional fields
      * @throws com.example.ecommerce_system.exception.product.ProductNotFoundException if the target product does not exist
      */
-    public void updateProduct(UUID productId, ProductRequestDto request) {
+    public ProductResponseDto updateProduct(UUID productId, ProductRequestDto request) {
         Product existing = this.productStore.getProduct(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
 
@@ -133,5 +139,6 @@ public class ProductService {
         );
 
         this.productStore.updateProduct(updated);
+        return map(updated);
     }
 }
