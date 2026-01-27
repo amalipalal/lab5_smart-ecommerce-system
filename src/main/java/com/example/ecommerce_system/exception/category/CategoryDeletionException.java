@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.exception;
+package com.example.ecommerce_system.exception.category;
 
 /**
  * Thrown when a category cannot be deleted, e.g. due to existing products referencing it,

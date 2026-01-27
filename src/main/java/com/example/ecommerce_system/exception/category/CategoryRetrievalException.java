@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.exception;
+package com.example.ecommerce_system.exception.category;
 
 public class CategoryRetrievalException extends RuntimeException {
     public CategoryRetrievalException(String identifier) {

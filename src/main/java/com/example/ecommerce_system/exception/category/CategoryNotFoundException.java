@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.exception;
+package com.example.ecommerce_system.exception.category;
 
 public class CategoryNotFoundException extends RuntimeException {
     public CategoryNotFoundException(String identifier) {
