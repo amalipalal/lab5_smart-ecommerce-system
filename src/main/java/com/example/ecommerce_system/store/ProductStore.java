@@ -43,6 +43,7 @@ public class ProductStore {
                 conn.commit();
                 return product;
             } catch (DaoException e) {
+                System.out.println(e.getMessage());
                 conn.rollback();
                 throw new ProductCreationException(product.getName());
             }
@@ -122,6 +123,29 @@ public class ProductStore {
             return this.productDao.findById(conn, productId);
         } catch (DaoException e) {
             throw new ProductRetrievalException(productId.toString());
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
+    }
+
+    /**
+     * Retrieve all products with pagination.
+     *
+     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#findAll(java.sql.Connection, int, int)}.
+     * Results are cached in the "products" cache using Spring Cache.
+     *
+     * @param limit maximum number of results
+     * @param offset zero-based offset
+     * @return list of {@link com.example.ecommerce_system.model.Product}
+     * @throws com.example.ecommerce_system.exception.product.ProductRetrievalException when DAO retrieval fails
+     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
+     */
+    @Cacheable(value = "products", key = "'all:' + #limit + ':' + #offset")
+    public List<Product> getAllProducts(int limit, int offset) {
+        try (Connection conn = dataSource.getConnection()) {
+            return this.productDao.findAll(conn, limit, offset);
+        } catch (DaoException e) {
+            throw new ProductRetrievalException("all");
         } catch (SQLException e) {
             throw new DatabaseConnectionException(e);
         }
