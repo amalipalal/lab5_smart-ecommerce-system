@@ -3,8 +3,10 @@ package com.example.ecommerce_system.service;
 import com.example.ecommerce_system.dto.ProductFilter;
 import com.example.ecommerce_system.dto.product.ProductRequestDto;
 import com.example.ecommerce_system.dto.product.ProductResponseDto;
+import com.example.ecommerce_system.exception.CategoryNotFoundException;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
 import com.example.ecommerce_system.model.Product;
+import com.example.ecommerce_system.store.CategoryStore;
 import com.example.ecommerce_system.store.ProductStore;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductStore productStore;
+    private final CategoryStore categoryStore;
 
     /**
      * Create a new product and persist it via {@link com.example.ecommerce_system.store.ProductStore#createProduct(com.example.ecommerce_system.model.Product)}.
@@ -26,6 +29,8 @@ public class ProductService {
      * @return a {@link com.example.ecommerce_system.dto.product.ProductResponseDto} containing identifiers and timestamps for the new product
      */
     public ProductResponseDto createProduct(ProductRequestDto request) {
+        checkThatCategoryExists(request.getCategoryId());
+
         Product product = new Product(
                 UUID.randomUUID(),
                 request.getName(),
@@ -38,6 +43,11 @@ public class ProductService {
         );
         Product saved = this.productStore.createProduct(product);
         return map(saved);
+    }
+
+    private void checkThatCategoryExists(UUID categoryId) {
+        categoryStore.getCategory(categoryId).orElseThrow(
+                () -> new CategoryNotFoundException(categoryId.toString()));
     }
 
     private ProductResponseDto map(Product product) {
