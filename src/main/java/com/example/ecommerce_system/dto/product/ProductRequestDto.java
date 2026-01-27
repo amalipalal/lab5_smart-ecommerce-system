@@ -23,12 +23,20 @@ public class ProductRequestDto {
     )
     private String description;
 
+    @NotNull(
+            groups = CreateProductRequest.class,
+            message = "price cannot be empty"
+    )
     @PositiveOrZero(
             groups = {CreateProductRequest.class, UpdateProductRequest.class},
             message = "price cannot be less than 0"
     )
     Double price;
 
+    @NotNull(
+            groups = CreateProductRequest.class,
+            message = "stock cannot be empty"
+    )
     @PositiveOrZero(
             groups = {CreateProductRequest.class, UpdateProductRequest.class},
             message = "stock cannot be less than 0"
@@ -36,7 +44,7 @@ public class ProductRequestDto {
     Integer stock;
 
     @NotNull(
-            groups = {CreateProductRequest.class, UpdateProductRequest.class},
+            groups = {CreateProductRequest.class},
             message = "categoryId cannot be empty"
     )
     UUID categoryId;
