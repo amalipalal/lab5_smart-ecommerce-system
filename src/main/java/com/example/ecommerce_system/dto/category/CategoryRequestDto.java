@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.dto;
+package com.example.ecommerce_system.dto.category;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

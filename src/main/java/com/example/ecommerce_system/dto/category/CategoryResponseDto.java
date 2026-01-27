@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.dto;
+package com.example.ecommerce_system.dto.category;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
