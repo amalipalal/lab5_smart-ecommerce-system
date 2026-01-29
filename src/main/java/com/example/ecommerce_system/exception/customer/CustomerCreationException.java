@@ -1,0 +1,7 @@
+package com.example.ecommerce_system.exception.customer;
+
+public class CustomerCreationException extends RuntimeException {
+    public CustomerCreationException(String identifier) {
+        super("Failed to create customer '" + identifier + "'.");
+    }
+}
