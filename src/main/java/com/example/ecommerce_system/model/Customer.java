@@ -18,5 +18,4 @@ public class Customer {
     private String phone;
     private Instant createdAt;
     private boolean isActive;
-    // TODO: Add isActive
 }
