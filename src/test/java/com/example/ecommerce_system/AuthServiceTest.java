@@ -10,6 +10,7 @@ import com.example.ecommerce_system.exception.auth.WeakPasswordException;
 import com.example.ecommerce_system.model.Role;
 import com.example.ecommerce_system.model.User;
 import com.example.ecommerce_system.service.AuthService;
+import com.example.ecommerce_system.store.CustomerStore;
 import com.example.ecommerce_system.store.UserStore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +36,9 @@ class AuthServiceTest {
     private UserStore userStore;
 
     @Mock
+    private CustomerStore customerStore;
+
+    @Mock
     private BCryptPasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -46,14 +50,16 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "admin@example.com",
                 "Password123!",
-                Role.ADMIN
+                "John",
+                "Doe",
+                "+233123456789"
         );
 
         User savedUser = User.builder()
                 .userId(UUID.randomUUID())
                 .email("admin@example.com")
                 .passwordHash("hashedPassword")
-                .role(Role.ADMIN)
+                .role(Role.CUSTOMER)
                 .createdAt(Instant.now())
                 .build();
 
@@ -64,10 +70,11 @@ class AuthServiceTest {
         AuthResponseDto response = authService.signup(request);
 
         Assertions.assertEquals("admin@example.com", response.getEmail());
-        Assertions.assertEquals(Role.ADMIN, response.getRole());
+        Assertions.assertEquals(Role.CUSTOMER, response.getRole());
         verify(userStore).getUserByEmail("admin@example.com");
         verify(passwordEncoder).encode("Password123!");
         verify(userStore).createUser(any(User.class));
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
@@ -76,7 +83,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "customer@example.com",
                 "Password123!",
-                Role.CUSTOMER
+                "Jane",
+                "Smith",
+                "+233987654321"
         );
 
         User savedUser = User.builder()
@@ -96,6 +105,7 @@ class AuthServiceTest {
         Assertions.assertEquals("customer@example.com", response.getEmail());
         Assertions.assertEquals(Role.CUSTOMER, response.getRole());
         verify(userStore).createUser(any(User.class));
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
@@ -104,6 +114,8 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Password123!",
+                "Bob",
+                "Johnson",
                 null
         );
 
@@ -123,6 +135,7 @@ class AuthServiceTest {
 
         Assertions.assertEquals(Role.CUSTOMER, response.getRole());
         verify(userStore).createUser(argThat(user -> user.getRole() == Role.CUSTOMER));
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
@@ -131,7 +144,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "existing@example.com",
                 "Password123!",
-                Role.CUSTOMER
+                "Alice",
+                "Brown",
+                "+233111222333"
         );
 
         User existingUser = User.builder()
@@ -152,6 +167,7 @@ class AuthServiceTest {
         verify(userStore).getUserByEmail("existing@example.com");
         verify(passwordEncoder, never()).encode(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -160,7 +176,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Pass1!",
-                Role.CUSTOMER
+                "Tom",
+                "White",
+                "+233444555666"
         );
 
         Assertions.assertThrows(
@@ -170,6 +188,7 @@ class AuthServiceTest {
 
         verify(userStore, never()).getUserByEmail(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -178,7 +197,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "password123!",
-                Role.CUSTOMER
+                "Sam",
+                "Green",
+                "+233777888999"
         );
 
         Assertions.assertThrows(
@@ -188,6 +209,7 @@ class AuthServiceTest {
 
         verify(userStore, never()).getUserByEmail(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -196,7 +218,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "PASSWORD123!",
-                Role.CUSTOMER
+                "Mike",
+                "Black",
+                "+233555666777"
         );
 
         Assertions.assertThrows(
@@ -206,6 +230,7 @@ class AuthServiceTest {
 
         verify(userStore, never()).getUserByEmail(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -214,7 +239,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Password!",
-                Role.CUSTOMER
+                "Chris",
+                "Gray",
+                "+233888999000"
         );
 
         Assertions.assertThrows(
@@ -224,6 +251,7 @@ class AuthServiceTest {
 
         verify(userStore, never()).getUserByEmail(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -232,7 +260,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Password123",
-                Role.CUSTOMER
+                "David",
+                "Blue",
+                "+233123123123"
         );
 
         Assertions.assertThrows(
@@ -242,6 +272,7 @@ class AuthServiceTest {
 
         verify(userStore, never()).getUserByEmail(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -250,7 +281,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 null,
-                Role.CUSTOMER
+                "Emma",
+                "Red",
+                "+233456456456"
         );
 
         Assertions.assertThrows(
@@ -260,6 +293,7 @@ class AuthServiceTest {
 
         verify(userStore, never()).getUserByEmail(any());
         verify(userStore, never()).createUser(any());
+        verify(customerStore, never()).createCustomer(any(), any());
     }
 
     @Test
@@ -342,7 +376,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Password123!",
-                Role.CUSTOMER
+                "Lisa",
+                "Purple",
+                "+233789789789"
         );
 
         User savedUser = User.builder()
@@ -363,6 +399,7 @@ class AuthServiceTest {
         verify(userStore).createUser(argThat(user ->
                 user.getPasswordHash().equals("hashedPassword")
         ));
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
@@ -371,7 +408,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Password123!",
-                Role.ADMIN
+                "Mark",
+                "Orange",
+                "+233321321321"
         );
 
         UUID userId = UUID.randomUUID();
@@ -380,7 +419,7 @@ class AuthServiceTest {
                 .userId(userId)
                 .email("user@example.com")
                 .passwordHash("hashedPassword")
-                .role(Role.ADMIN)
+                .role(Role.CUSTOMER)
                 .createdAt(createdAt)
                 .build();
 
@@ -392,8 +431,9 @@ class AuthServiceTest {
 
         Assertions.assertEquals(userId, response.getUserId());
         Assertions.assertEquals("user@example.com", response.getEmail());
-        Assertions.assertEquals(Role.ADMIN, response.getRole());
+        Assertions.assertEquals(Role.CUSTOMER, response.getRole());
         Assertions.assertEquals(createdAt, response.getCreatedAt());
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
@@ -431,7 +471,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "ValidPass123!",
-                Role.CUSTOMER
+                "Nina",
+                "Yellow",
+                "+233654654654"
         );
 
         User savedUser = User.builder()
@@ -449,14 +491,15 @@ class AuthServiceTest {
         Assertions.assertDoesNotThrow(() -> authService.signup(request));
 
         verify(userStore).createUser(any(User.class));
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
     @DisplayName("Should accept password with different special characters")
     void shouldAcceptPasswordWithDifferentSpecialCharacters() {
-        SignupRequestDto request1 = new SignupRequestDto("user1@example.com", "Password123@", Role.CUSTOMER);
-        SignupRequestDto request2 = new SignupRequestDto("user2@example.com", "Password123#", Role.CUSTOMER);
-        SignupRequestDto request3 = new SignupRequestDto("user3@example.com", "Password123$", Role.CUSTOMER);
+        SignupRequestDto request1 = new SignupRequestDto("user1@example.com", "Password123@", "Paul", "Pink", "+233987987987");
+        SignupRequestDto request2 = new SignupRequestDto("user2@example.com", "Password123#", "Rachel", "Brown", "+233147147147");
+        SignupRequestDto request3 = new SignupRequestDto("user3@example.com", "Password123$", "Steve", "Cyan", "+233258258258");
 
         when(userStore.getUserByEmail(any())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(any())).thenReturn("hashedPassword");
@@ -479,7 +522,9 @@ class AuthServiceTest {
         SignupRequestDto request = new SignupRequestDto(
                 "user@example.com",
                 "Password123!",
-                Role.CUSTOMER
+                "Victor",
+                "Magenta",
+                "+233369369369"
         );
 
         when(userStore.getUserByEmail("user@example.com")).thenReturn(Optional.empty());
@@ -495,5 +540,6 @@ class AuthServiceTest {
         authService.signup(request);
 
         verify(userStore).createUser(argThat(user -> user.getUserId() != null));
+        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 }
