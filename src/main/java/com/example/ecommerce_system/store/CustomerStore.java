@@ -23,35 +23,6 @@ public class CustomerStore {
     private final CustomerDao customerDao;
 
     /**
-     * Persist a new {@link com.example.ecommerce_system.model.Customer} inside a transaction.
-     *
-     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#save(java.sql.Connection, java.util.UUID, com.example.ecommerce_system.model.Customer)}.
-     * On success this method evicts relevant entries in the "customers" cache via Spring Cache.
-     *
-     * @param userId user identifier linked to the customer
-     * @param customer the customer to create
-     * @return the persisted {@link com.example.ecommerce_system.model.Customer}
-     * @throws com.example.ecommerce_system.exception.customer.CustomerCreationException when DAO save fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
-     */
-    @CacheEvict(value = "customers", allEntries = true)
-    public Customer createCustomer(UUID userId, Customer customer) {
-        try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                this.customerDao.save(conn, userId, customer);
-                conn.commit();
-                return customer;
-            } catch (DaoException e) {
-                conn.rollback();
-                throw new CustomerCreationException(customer.getEmail());
-            }
-        } catch (SQLException e) {
-            throw new DatabaseConnectionException(e);
-        }
-    }
-
-    /**
      * Update an existing {@link com.example.ecommerce_system.model.Customer} inside a transaction.
      *
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#update(java.sql.Connection, com.example.ecommerce_system.model.Customer)}.
@@ -119,6 +90,30 @@ public class CustomerStore {
             return this.customerDao.findAll(conn, limit, offset);
         } catch (DaoException e) {
             throw new CustomerRetrievalException("all");
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
+    }
+
+    /**
+     * Search customers by query string matching first name, last name, or email.
+     *
+     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#search(java.sql.Connection, String, int, int)}.
+     * Results are cached in the "customers" cache using Spring Cache.
+     *
+     * @param query search query string
+     * @param limit maximum number of results
+     * @param offset zero-based offset
+     * @return list of matching {@link com.example.ecommerce_system.model.Customer}
+     * @throws com.example.ecommerce_system.exception.customer.CustomerSearchException when DAO search fails
+     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
+     */
+    @Cacheable(value = "customers", key = "'search:' + #query + ':' + #limit + ':' + #offset")
+    public List<Customer> searchCustomers(String query, int limit, int offset) {
+        try (Connection conn = dataSource.getConnection()) {
+            return this.customerDao.search(conn, query, limit, offset);
+        } catch (DaoException e) {
+            throw new CustomerSearchException(query);
         } catch (SQLException e) {
             throw new DatabaseConnectionException(e);
         }
