@@ -1,14 +1,18 @@
 package com.example.ecommerce_system.store;
 
+import com.example.ecommerce_system.dao.interfaces.CustomerDao;
 import com.example.ecommerce_system.dao.interfaces.UserDao;
 import com.example.ecommerce_system.exception.DaoException;
 import com.example.ecommerce_system.exception.DatabaseConnectionException;
 import com.example.ecommerce_system.exception.user.UserCreationException;
 import com.example.ecommerce_system.exception.user.UserRetrievalException;
+import com.example.ecommerce_system.model.Customer;
 import com.example.ecommerce_system.model.User;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -21,6 +25,7 @@ import java.util.Optional;
 public class UserStore {
     private final DataSource dataSource;
     private final UserDao userDao;
+    private final CustomerDao customerDao;
 
     /**
      * Persist a new {@link com.example.ecommerce_system.model.User} within a transaction.
@@ -32,12 +37,18 @@ public class UserStore {
      * @throws UserCreationException when Dao persistence fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
-    @CachePut(value = "users", key = "'email:' + #user.email")
-    public User createUser(User user) {
+    @Caching(
+        put = {
+            @CachePut(value = "users", key = "'email:' + #user.email"),
+        },
+        evict = @CacheEvict(value = "customers", allEntries = true)
+    )
+    public User createUser(User user, Customer customer) {
         try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 userDao.save(conn, user);
+                customerDao.save(conn, user.getUserId(), customer);
                 conn.commit();
                 return user;
             } catch (DaoException e) {
