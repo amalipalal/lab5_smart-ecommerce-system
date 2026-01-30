@@ -10,7 +10,6 @@ import com.example.ecommerce_system.exception.auth.WeakPasswordException;
 import com.example.ecommerce_system.model.Customer;
 import com.example.ecommerce_system.model.Role;
 import com.example.ecommerce_system.model.User;
-import com.example.ecommerce_system.store.CustomerStore;
 import com.example.ecommerce_system.store.UserStore;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserStore userStore;
-    private final CustomerStore customerStore;
     private final BCryptPasswordEncoder passwordEncoder;
 
     /**
@@ -47,27 +45,26 @@ public class AuthService {
             throw new DuplicateEmailException(request.getEmail());
         }
 
-        var savedUser = saveUser(request);
-        saveCustomer(request, savedUser.getUserId());
+        var newUser = createUser(request);
+        var newCustomer = createCustomer(request);
 
-        return mapToAuthResponse(savedUser);
+        var createdUser = userStore.createUser(newUser, newCustomer);
+        return mapToAuthResponse(createdUser);
     }
 
-    private User saveUser(SignupRequestDto request) {
+    private User createUser(SignupRequestDto request) {
         String hashedPassword = passwordEncoder.encode(request.getPassword());
-        User user = User.builder()
+        return User.builder()
                 .userId(UUID.randomUUID())
                 .email(request.getEmail())
                 .passwordHash(hashedPassword)
                 .role(Role.CUSTOMER)
                 .createdAt(Instant.now())
                 .build();
-
-        return userStore.createUser(user);
     }
 
-    private void saveCustomer(SignupRequestDto request, UUID userId) {
-        Customer customer = Customer.builder()
+    private Customer createCustomer(SignupRequestDto request) {
+        return Customer.builder()
                 .customerId(UUID.randomUUID())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -75,8 +72,6 @@ public class AuthService {
                 .isActive(true)
                 .createdAt(Instant.now())
                 .build();
-
-        customerStore.createCustomer(userId, customer);
     }
 
     /**

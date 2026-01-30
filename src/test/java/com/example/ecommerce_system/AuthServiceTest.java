@@ -7,6 +7,7 @@ import com.example.ecommerce_system.exception.auth.DuplicateEmailException;
 import com.example.ecommerce_system.exception.auth.InvalidCredentialsException;
 import com.example.ecommerce_system.exception.auth.UserNotFoundException;
 import com.example.ecommerce_system.exception.auth.WeakPasswordException;
+import com.example.ecommerce_system.model.Customer;
 import com.example.ecommerce_system.model.Role;
 import com.example.ecommerce_system.model.User;
 import com.example.ecommerce_system.service.AuthService;
@@ -45,8 +46,8 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
-    @DisplayName("Should signup user successfully with ADMIN role")
-    void shouldSignupUserSuccessfullyWithAdminRole() {
+    @DisplayName("Should signup user successfully")
+    void shouldSignupUserSuccessfully() {
         SignupRequestDto request = new SignupRequestDto(
                 "admin@example.com",
                 "Password123!",
@@ -65,7 +66,7 @@ class AuthServiceTest {
 
         when(userStore.getUserByEmail("admin@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("Password123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(savedUser);
+        when(userStore.createUser(any(User.class), any(Customer.class))).thenReturn(savedUser);
 
         AuthResponseDto response = authService.signup(request);
 
@@ -73,69 +74,7 @@ class AuthServiceTest {
         Assertions.assertEquals(Role.CUSTOMER, response.getRole());
         verify(userStore).getUserByEmail("admin@example.com");
         verify(passwordEncoder).encode("Password123!");
-        verify(userStore).createUser(any(User.class));
-        verify(customerStore).createCustomer(any(UUID.class), any());
-    }
-
-    @Test
-    @DisplayName("Should signup user successfully with CUSTOMER role")
-    void shouldSignupUserSuccessfullyWithCustomerRole() {
-        SignupRequestDto request = new SignupRequestDto(
-                "customer@example.com",
-                "Password123!",
-                "Jane",
-                "Smith",
-                "+233987654321"
-        );
-
-        User savedUser = User.builder()
-                .userId(UUID.randomUUID())
-                .email("customer@example.com")
-                .passwordHash("hashedPassword")
-                .role(Role.CUSTOMER)
-                .createdAt(Instant.now())
-                .build();
-
-        when(userStore.getUserByEmail("customer@example.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("Password123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(savedUser);
-
-        AuthResponseDto response = authService.signup(request);
-
-        Assertions.assertEquals("customer@example.com", response.getEmail());
-        Assertions.assertEquals(Role.CUSTOMER, response.getRole());
-        verify(userStore).createUser(any(User.class));
-        verify(customerStore).createCustomer(any(UUID.class), any());
-    }
-
-    @Test
-    @DisplayName("Should default to CUSTOMER role when role is null")
-    void shouldDefaultToCustomerRoleWhenRoleIsNull() {
-        SignupRequestDto request = new SignupRequestDto(
-                "user@example.com",
-                "Password123!",
-                "Bob",
-                "Johnson",
-                null
-        );
-
-        User savedUser = User.builder()
-                .userId(UUID.randomUUID())
-                .email("user@example.com")
-                .passwordHash("hashedPassword")
-                .role(Role.CUSTOMER)
-                .createdAt(Instant.now())
-                .build();
-
-        when(userStore.getUserByEmail("user@example.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("Password123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(savedUser);
-
-        AuthResponseDto response = authService.signup(request);
-
-        Assertions.assertEquals(Role.CUSTOMER, response.getRole());
-        verify(userStore).createUser(argThat(user -> user.getRole() == Role.CUSTOMER));
-        verify(customerStore).createCustomer(any(UUID.class), any());
+        verify(userStore).createUser(any(User.class), any(Customer.class));
     }
 
     @Test
@@ -166,8 +105,7 @@ class AuthServiceTest {
 
         verify(userStore).getUserByEmail("existing@example.com");
         verify(passwordEncoder, never()).encode(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -187,8 +125,7 @@ class AuthServiceTest {
         );
 
         verify(userStore, never()).getUserByEmail(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -208,8 +145,7 @@ class AuthServiceTest {
         );
 
         verify(userStore, never()).getUserByEmail(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -229,8 +165,7 @@ class AuthServiceTest {
         );
 
         verify(userStore, never()).getUserByEmail(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -250,8 +185,7 @@ class AuthServiceTest {
         );
 
         verify(userStore, never()).getUserByEmail(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -271,8 +205,7 @@ class AuthServiceTest {
         );
 
         verify(userStore, never()).getUserByEmail(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -292,8 +225,7 @@ class AuthServiceTest {
         );
 
         verify(userStore, never()).getUserByEmail(any());
-        verify(userStore, never()).createUser(any());
-        verify(customerStore, never()).createCustomer(any(), any());
+        verify(userStore, never()).createUser(any(), any());
     }
 
     @Test
@@ -391,15 +323,14 @@ class AuthServiceTest {
 
         when(userStore.getUserByEmail("user@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("Password123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(savedUser);
+        when(userStore.createUser(any(User.class), any(Customer.class))).thenReturn(savedUser);
 
         authService.signup(request);
 
         verify(passwordEncoder).encode("Password123!");
         verify(userStore).createUser(argThat(user ->
                 user.getPasswordHash().equals("hashedPassword")
-        ));
-        verify(customerStore).createCustomer(any(UUID.class), any());
+        ), any(Customer.class));
     }
 
     @Test
@@ -425,7 +356,7 @@ class AuthServiceTest {
 
         when(userStore.getUserByEmail("user@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("Password123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(savedUser);
+        when(userStore.createUser(any(User.class), any(Customer.class))).thenReturn(savedUser);
 
         AuthResponseDto response = authService.signup(request);
 
@@ -433,7 +364,6 @@ class AuthServiceTest {
         Assertions.assertEquals("user@example.com", response.getEmail());
         Assertions.assertEquals(Role.CUSTOMER, response.getRole());
         Assertions.assertEquals(createdAt, response.getCreatedAt());
-        verify(customerStore).createCustomer(any(UUID.class), any());
     }
 
     @Test
@@ -486,12 +416,11 @@ class AuthServiceTest {
 
         when(userStore.getUserByEmail("user@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("ValidPass123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(savedUser);
+        when(userStore.createUser(any(User.class), any(Customer.class))).thenReturn(savedUser);
 
         Assertions.assertDoesNotThrow(() -> authService.signup(request));
 
-        verify(userStore).createUser(any(User.class));
-        verify(customerStore).createCustomer(any(UUID.class), any());
+        verify(userStore).createUser(any(User.class), any(Customer.class));
     }
 
     @Test
@@ -503,7 +432,7 @@ class AuthServiceTest {
 
         when(userStore.getUserByEmail(any())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(any())).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(User.builder()
+        when(userStore.createUser(any(User.class), any(Customer.class))).thenReturn(User.builder()
                 .userId(UUID.randomUUID())
                 .email("user@example.com")
                 .passwordHash("hashedPassword")
@@ -529,7 +458,7 @@ class AuthServiceTest {
 
         when(userStore.getUserByEmail("user@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("Password123!")).thenReturn("hashedPassword");
-        when(userStore.createUser(any(User.class))).thenReturn(User.builder()
+        when(userStore.createUser(any(User.class), any(Customer.class))).thenReturn(User.builder()
                 .userId(UUID.randomUUID())
                 .email("user@example.com")
                 .passwordHash("hashedPassword")
@@ -539,7 +468,6 @@ class AuthServiceTest {
 
         authService.signup(request);
 
-        verify(userStore).createUser(argThat(user -> user.getUserId() != null));
-        verify(customerStore).createCustomer(any(UUID.class), any());
+        verify(userStore).createUser(argThat(user -> user.getUserId() != null), any(Customer.class));
     }
 }
