@@ -14,28 +14,28 @@ import java.util.*;
 public class CustomerJdbcDao implements CustomerDao {
 
     private static final String FIND_ALL = """
-            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, c.created_at, c.is_active
+            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
             FROM customer c
             JOIN users u ON c.user_id = u.user_id
             LIMIT ? OFFSET ?
             """;
 
     private static final String FIND_BY_ID = """
-            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, c.created_at, c.is_active
+            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
             FROM customer c
             JOIN users u ON c.user_id = u.user_id
             WHERE c.customer_id = ?
             """;
 
     private static final String FIND_BY_MULTIPLE_IDS = """
-            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, c.created_at, c.is_active
+            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
             FROM customer c
             JOIN users u ON c.user_id = u.user_id
             WHERE c.customer_id IN 
             """;
 
     private static final String FIND_BY_EMAIL = """
-            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, c.created_at, c.is_active
+            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
             FROM customer c
             JOIN users u ON c.user_id = u.user_id
             WHERE u.email = ?
@@ -43,8 +43,8 @@ public class CustomerJdbcDao implements CustomerDao {
 
     private static final String SAVE = """
             INSERT INTO customer
-            (customer_id, user_id, first_name, last_name, phone, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (customer_id, user_id, first_name, last_name, phone)
+            VALUES (?, ?, ?, ?, ?)
             """;
 
     private static final String UPDATE = """
@@ -143,7 +143,6 @@ public class CustomerJdbcDao implements CustomerDao {
             ps.setString(3, customer.getFirstName());
             ps.setString(4, customer.getLastName());
             ps.setString(5, customer.getPhone());
-            ps.setTimestamp(6, Timestamp.from(customer.getCreatedAt()));
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DaoException("Failed to save customer " + customer.getCustomerId(), e);
