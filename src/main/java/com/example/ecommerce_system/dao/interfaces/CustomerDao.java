@@ -70,4 +70,16 @@ public interface CustomerDao {
      * @throws DaoException on DAO errors
      */
     void update(Connection connection, Customer customer) throws DaoException;
+
+    /**
+     * Search customers by query string matching first name, last name, or email.
+     *
+     * @param connection the {@link java.sql.Connection} to use
+     * @param query search query string
+     * @param limit maximum number of results
+     * @param offset zero-based offset
+     * @return list of matching customers
+     * @throws DaoException on DAO errors
+     */
+    List<Customer> search(Connection connection, String query, int limit, int offset) throws DaoException;
 }

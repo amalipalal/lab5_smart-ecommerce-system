@@ -53,6 +53,16 @@ public class CustomerJdbcDao implements CustomerDao {
             WHERE customer_id = ?
             """;
 
+    private static final String SEARCH = """
+            SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
+            FROM customer c
+            JOIN users u ON c.user_id = u.user_id
+            WHERE LOWER(c.first_name) LIKE LOWER(?) 
+               OR LOWER(c.last_name) LIKE LOWER(?) 
+               OR LOWER(u.email) LIKE LOWER(?)
+            LIMIT ? OFFSET ?
+            """;
+
     @Override
     public List<Customer> findAll(Connection conn, int limit, int offset) throws DaoException {
         try (PreparedStatement preparedStatement = conn.prepareStatement(FIND_ALL)) {
@@ -155,11 +165,27 @@ public class CustomerJdbcDao implements CustomerDao {
             ps.setString(1, customer.getFirstName());
             ps.setString(2, customer.getLastName());
             ps.setString(3, customer.getPhone());
-            ps.setObject(4, customer.getCustomerId());
-            ps.setBoolean(5, customer.isActive());
+            ps.setBoolean(4, customer.isActive());
+            ps.setObject(5, customer.getCustomerId());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DaoException("Failed to save customer " + customer.getCustomerId(), e);
+        }
+    }
+
+    @Override
+    public List<Customer> search(Connection conn, String query, int limit, int offset) throws DaoException {
+        try (PreparedStatement ps = conn.prepareStatement(SEARCH)) {
+            String searchPattern = "%" + query + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            ps.setInt(4, limit);
+            ps.setInt(5, offset);
+
+            return executeQueryForList(ps);
+        } catch (SQLException e) {
+            throw new DaoException("Failed to search customers with query: " + query, e);
         }
     }
 }
