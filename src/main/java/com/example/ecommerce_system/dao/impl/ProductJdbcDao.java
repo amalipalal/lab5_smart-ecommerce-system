@@ -8,6 +8,7 @@ import com.example.ecommerce_system.util.SqlAndParams;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +65,12 @@ public class ProductJdbcDao implements ProductDao {
 
     private static final String DELETE = """
             DELETE FROM product WHERE product_id = ?
+            """;
+
+    private static final String UPDATE_STOCK = """
+            UPDATE product
+            SET stock_quantity = ?, updated_at = ?
+            WHERE product_id = ?
             """;
 
     @Override
@@ -195,6 +202,22 @@ public class ProductJdbcDao implements ProductDao {
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DaoException("Error deleting product", e);
+        }
+    }
+
+    @Override
+    public void updateStock(Connection conn, UUID productId, int newStock) throws DaoException {
+        try (PreparedStatement stmt = conn.prepareStatement(UPDATE_STOCK)) {
+            stmt.setInt(1, newStock);
+            stmt.setTimestamp(2, Timestamp.from(Instant.now()));
+            stmt.setObject(3, productId);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new DaoException("Failed to update stock for product: " + productId);
+            }
+        } catch (SQLException e) {
+            throw new DaoException("Error updating product stock", e);
         }
     }
 
