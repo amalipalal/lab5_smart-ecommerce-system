@@ -26,6 +26,9 @@ public class OrderService {
     private CustomerStore customerStore;
     private ProductStore productStore;
 
+    /**
+     * Places a new order for the specified customer and returns the order response.
+     */
     public OrderResponseDto placeOrder(OrderRequestDto request, UUID customerId) {
         customerStore.getCustomer(customerId).orElseThrow(
                 () -> new CustomerNotFoundException(customerId.toString()));
@@ -102,6 +105,9 @@ public class OrderService {
                 .build();
     }
 
+    /**
+     * Retrieves an order and its items by order ID.
+     */
     public OrderResponseDto getOrder(UUID orderId) {
         Orders order = orderStore.getOrder(orderId).orElseThrow(
                 () -> new OrderDoesNotExist(orderId.toString()));
@@ -110,6 +116,9 @@ public class OrderService {
         return map(order, items);
     }
 
+    /**
+     * Retrieves all orders with pagination.
+     */
     public List<OrderResponseDto> getAllOrders(int limit, int offset) {
         List<Orders> orders = orderStore.getAllOrders(limit, offset);
         return orders.stream()
@@ -120,6 +129,9 @@ public class OrderService {
                 .toList();
     }
 
+    /**
+     * Retrieves all orders for a customer with pagination.
+     */
     public List<OrderResponseDto> getCustomerOrders(UUID customerId, int limit, int offset) {
         customerStore.getCustomer(customerId).orElseThrow(
                 () -> new CustomerNotFoundException(customerId.toString()));
@@ -133,6 +145,9 @@ public class OrderService {
                 .toList();
     }
 
+    /**
+     * Updates the status of an order and returns the updated order response.
+     */
     public OrderResponseDto updateOrderStatus(UUID orderId, OrderRequestDto request) {
         Orders existingOrder = orderStore.getOrder(orderId).orElseThrow(
                 () -> new OrderDoesNotExist(orderId.toString()));
