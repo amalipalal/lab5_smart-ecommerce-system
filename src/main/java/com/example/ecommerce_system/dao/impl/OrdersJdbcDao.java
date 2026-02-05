@@ -155,17 +155,4 @@ public class OrdersJdbcDao implements OrdersDao {
             throw new DaoException("Failed to update order " + order.getOrderId(), e);
         }
     }
-
-    @Override
-    public void delete(Connection conn, UUID orderId) throws DaoException {
-        try (PreparedStatement ps = conn.prepareStatement(DELETE)) {
-            ps.setObject(1, orderId);
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected == 0) {
-                throw new DaoException("Failed to delete order " + orderId + " - order not found");
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Failed to delete order " + orderId, e);
-        }
-    }
 }
