@@ -47,7 +47,7 @@ public class OrdersJdbcDao implements OrdersDao {
             order_id, customer_id, status_id, order_date, total_amount,
             shipping_country, shipping_city, shipping_postal_code
         )
-        VALUES (?, ?, ?, (SELECT status_id FROM order_statuses WHERE status_name = ?), ?, ?, ?, ?)
+        VALUES (?, ?, (SELECT status_id FROM order_statuses WHERE status_name = ?), ?, ?, ?, ?, ?)
         """;
 
     private static final String UPDATE = """
@@ -130,7 +130,7 @@ public class OrdersJdbcDao implements OrdersDao {
         try (PreparedStatement ps = conn.prepareStatement(SAVE)) {
             ps.setObject(1, order.getOrderId());
             ps.setObject(2, order.getCustomerId());
-            ps.setString(3, order.getStatus().name());
+            ps.setString(3, order.getStatus().name().toUpperCase());
             ps.setTimestamp(4, Timestamp.from(order.getOrderDate()));
             ps.setDouble(5, order.getTotalAmount());
             ps.setString(6, order.getShippingCountry());
@@ -153,19 +153,6 @@ public class OrdersJdbcDao implements OrdersDao {
             }
         } catch (SQLException e) {
             throw new DaoException("Failed to update order " + order.getOrderId(), e);
-        }
-    }
-
-    @Override
-    public void delete(Connection conn, UUID orderId) throws DaoException {
-        try (PreparedStatement ps = conn.prepareStatement(DELETE)) {
-            ps.setObject(1, orderId);
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected == 0) {
-                throw new DaoException("Failed to delete order " + orderId + " - order not found");
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Failed to delete order " + orderId, e);
         }
     }
 }

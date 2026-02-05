@@ -90,4 +90,14 @@ public interface ProductDao {
      * @throws DaoException on DAO errors
      */
     void deleteById(Connection connection, UUID productId) throws DaoException;
+
+    /**
+     * Update the stock of a product.
+     *
+     * @param connection the {@link java.sql.Connection} to use
+     * @param productId product identifier
+     * @param newStock new stock quantity
+     * @throws DaoException on DAO errors
+     */
+    void updateStock(Connection connection, UUID productId, int newStock) throws DaoException;
 }

@@ -1,6 +1,5 @@
 package com.example.ecommerce_system.dto.orders;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -34,14 +33,5 @@ public class OrderItemDto {
     )
     private Integer quantity;
 
-    @DecimalMin(
-            groups = {OrderItemRequest.class, OrderItemResponse.class, CreateOrderRequest.class},
-            value = "0.01",
-            message = "price must be at least 0.01"
-    )
-    @NotNull(
-            groups = {OrderItemRequest.class, OrderItemResponse.class, CreateOrderRequest.class},
-            message = "price is required"
-    )
     private Double price;
 }

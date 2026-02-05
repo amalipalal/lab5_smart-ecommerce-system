@@ -1,8 +1,0 @@
-type Test {
-    id: ID!,
-    name: String!
-}
-
-type Query {
-    getTest(id: ID): Test!
-}

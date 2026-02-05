@@ -4,6 +4,7 @@ import com.example.ecommerce_system.dto.orders.OrderItemDto;
 import com.example.ecommerce_system.dto.orders.OrderRequestDto;
 import com.example.ecommerce_system.dto.orders.OrderResponseDto;
 import com.example.ecommerce_system.exception.customer.CustomerNotFoundException;
+import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
 import com.example.ecommerce_system.exception.order.OrderDoesNotExist;
 import com.example.ecommerce_system.exception.product.InsufficientProductStock;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
@@ -25,14 +26,19 @@ public class OrderService {
     private CustomerStore customerStore;
     private ProductStore productStore;
 
+    /**
+     * Places a new order for the specified customer and returns the order response.
+     */
     public OrderResponseDto placeOrder(OrderRequestDto request, UUID customerId) {
-        Customer customer = customerStore.getCustomer(customerId).orElseThrow(
+        customerStore.getCustomer(customerId).orElseThrow(
                 () -> new CustomerNotFoundException(customerId.toString()));
 
         var orderId = UUID.randomUUID();
 
         List<OrderItem> items = validateOrderItems(request.getItems(), orderId);
-        double totalAmount = items.stream().mapToDouble(OrderItem::getPriceAtPurchase).sum();
+        double totalAmount = items.stream()
+                .mapToDouble(item -> item.getPriceAtPurchase() * item.getQuantity())
+                .sum();
 
         Orders newOrder = createOrder(orderId, request, customerId, totalAmount);
 
@@ -79,13 +85,13 @@ public class OrderService {
     private OrderResponseDto map(Orders order, List<OrderItem> items) {
         var itemsDto = items.stream().map(this::mapToOrderItemDto).toList();
         return OrderResponseDto.builder()
+                .orderId(order.getOrderId())
                 .items(itemsDto)
                 .orderDate(order.getOrderDate())
                 .status(order.getStatus())
                 .shippingCity(order.getShippingCity())
                 .shippingCountry(order.getShippingCountry())
                 .shippingPostalCode(order.getShippingPostalCode())
-                .orderId(order.getOrderId())
                 .totalAmount(order.getTotalAmount())
                 .build();
     }
@@ -99,6 +105,9 @@ public class OrderService {
                 .build();
     }
 
+    /**
+     * Retrieves an order and its items by order ID.
+     */
     public OrderResponseDto getOrder(UUID orderId) {
         Orders order = orderStore.getOrder(orderId).orElseThrow(
                 () -> new OrderDoesNotExist(orderId.toString()));
@@ -107,6 +116,9 @@ public class OrderService {
         return map(order, items);
     }
 
+    /**
+     * Retrieves all orders with pagination.
+     */
     public List<OrderResponseDto> getAllOrders(int limit, int offset) {
         List<Orders> orders = orderStore.getAllOrders(limit, offset);
         return orders.stream()
@@ -117,6 +129,9 @@ public class OrderService {
                 .toList();
     }
 
+    /**
+     * Retrieves all orders for a customer with pagination.
+     */
     public List<OrderResponseDto> getCustomerOrders(UUID customerId, int limit, int offset) {
         customerStore.getCustomer(customerId).orElseThrow(
                 () -> new CustomerNotFoundException(customerId.toString()));
@@ -130,11 +145,70 @@ public class OrderService {
                 .toList();
     }
 
+    /**
+     * Updates the status of an order and returns the updated order response.
+     */
     public OrderResponseDto updateOrderStatus(UUID orderId, OrderRequestDto request) {
         Orders existingOrder = orderStore.getOrder(orderId).orElseThrow(
                 () -> new OrderDoesNotExist(orderId.toString()));
 
-        Orders updatedOrder = Orders.builder()
+        Orders updatedOrder = switch (request.getStatus()) {
+            case PROCESSED -> processOrder(existingOrder, orderId);
+            case CANCELLED -> cancelOrder(existingOrder);
+            default -> throw new InvalidOrderStatusException("this status is not allowed");
+        };
+
+        if (request.getStatus() == OrderStatus.CANCELLED) return buildOrderResponseWithoutItems(updatedOrder);
+
+        List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
+        return map(updatedOrder, items);
+    }
+
+    private Orders processOrder(Orders existingOrder, UUID orderId) {
+        if (existingOrder.getStatus() == OrderStatus.PROCESSED) return existingOrder;
+
+        List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
+        List<UUID> productIds = items.stream().map(OrderItem::getProductId).toList();
+        List<Integer> quantities = items.stream().map(OrderItem::getQuantity).toList();
+
+        List<Integer> newStocks = validateAndCalculateNewStocks(productIds, quantities);
+
+        productStore.updateProductStocks(productIds, newStocks);
+
+        Orders processedOrder = buildOrderWithNewStatus(existingOrder, OrderStatus.PROCESSED);
+        return orderStore.updateOrder(processedOrder);
+    }
+
+    private List<Integer> validateAndCalculateNewStocks(List<UUID> productIds, List<Integer> quantities) {
+        List<Integer> newStocks = new java.util.ArrayList<>();
+
+        for (int i = 0; i < productIds.size(); i++) {
+            UUID productId = productIds.get(i);
+            int quantityToDeduct = quantities.get(i);
+
+            Product product = productStore.getProduct(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
+
+            int newStock = product.getStockQuantity() - quantityToDeduct;
+            if (newStock < 0) throw new InsufficientProductStock(productId.toString());
+
+            newStocks.add(newStock);
+        }
+
+        return newStocks;
+    }
+
+    private Orders cancelOrder(Orders existingOrder) {
+        if (existingOrder.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalStateException("Only pending orders can be cancelled");
+        }
+
+        Orders cancelledOrder = buildOrderWithNewStatus(existingOrder, OrderStatus.CANCELLED);
+        return orderStore.updateOrder(cancelledOrder);
+    }
+
+    private Orders buildOrderWithNewStatus(Orders existingOrder, OrderStatus newStatus) {
+        return Orders.builder()
                 .orderId(existingOrder.getOrderId())
                 .customerId(existingOrder.getCustomerId())
                 .orderDate(existingOrder.getOrderDate())
@@ -142,12 +216,20 @@ public class OrderService {
                 .shippingCountry(existingOrder.getShippingCountry())
                 .shippingCity(existingOrder.getShippingCity())
                 .shippingPostalCode(existingOrder.getShippingPostalCode())
-                .status(request.getStatus())
+                .status(newStatus)
                 .build();
+    }
 
-        Orders savedOrder = orderStore.updateOrder(updatedOrder);
-        List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
-
-        return map(savedOrder, items);
+    private OrderResponseDto buildOrderResponseWithoutItems(Orders order) {
+        return OrderResponseDto.builder()
+                .orderId(order.getOrderId())
+                .orderDate(order.getOrderDate())
+                .status(order.getStatus())
+                .shippingCity(order.getShippingCity())
+                .shippingCountry(order.getShippingCountry())
+                .shippingPostalCode(order.getShippingPostalCode())
+                .totalAmount(order.getTotalAmount())
+                .items(null)
+                .build();
     }
 }

@@ -60,13 +60,4 @@ public interface OrdersDao {
      * @throws DaoException on DAO errors
      */
     void update(Connection connection, Orders order) throws DaoException;
-
-    /**
-     * Delete an order by id.
-     *
-     * @param connection the {@link java.sql.Connection} to use
-     * @param orderId order identifier
-     * @throws DaoException on DAO errors
-     */
-    void delete(Connection connection, UUID orderId) throws DaoException;
 }

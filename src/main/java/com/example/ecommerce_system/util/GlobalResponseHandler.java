@@ -4,6 +4,7 @@ import com.example.ecommerce_system.dto.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -76,6 +77,31 @@ public class GlobalResponseHandler {
         String message = String.format("Required parameter '%s' of type '%s' is missing",
                 exception.getParameterName(),
                 exception.getParameterType());
+
+        return ErrorResponseHandler.generateErrorMessage(
+                HttpStatus.BAD_REQUEST,
+                message,
+                exception.getClass().getSimpleName());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDto<String>> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException exception
+    ) {
+        String message = "Malformed JSON request";
+
+        if (exception.getCause() != null) {
+            String causeMessage = exception.getCause().getMessage();
+            if (causeMessage != null) {
+                if (causeMessage.contains("not one of the values accepted for Enum class")) {
+                    message = causeMessage.substring(0, causeMessage.indexOf("\n") >= 0
+                            ? causeMessage.indexOf("\n")
+                            : causeMessage.length());
+                } else {
+                    message = causeMessage;
+                }
+            }
+        }
 
         return ErrorResponseHandler.generateErrorMessage(
                 HttpStatus.BAD_REQUEST,
