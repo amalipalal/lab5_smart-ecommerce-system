@@ -196,4 +196,37 @@ public class ProductStore {
             throw new DatabaseConnectionException(e);
         }
     }
+
+    /**
+     * Update stock for multiple products inside a transaction.
+     *
+     * @param productIds list of product identifiers
+     * @param stockChanges list of stock changes corresponding to the product IDs
+     * @throws IllegalArgumentException when the sizes of productIds and stockChanges do not match
+     * @throws com.example.ecommerce_system.exception.product.ProductUpdateException when DAO update fails
+     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
+     */
+    @CacheEvict(value = "products", allEntries = true)
+    public void updateProductStocks(List<UUID> productIds, List<Integer> stockChanges) {
+        if (productIds.size() != stockChanges.size()) {
+            throw new IllegalArgumentException("Product IDs and stock changes must have the same size");
+        }
+
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                for (int i = 0; i < productIds.size(); i++) {
+                    UUID productId = productIds.get(i);
+                    int newStock = stockChanges.get(i);
+                    this.productDao.updateStock(conn, productId, newStock);
+                }
+                conn.commit();
+            } catch (DaoException e) {
+                conn.rollback();
+                throw new ProductUpdateException("Failed to update product stocks: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
+    }
 }
