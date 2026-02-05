@@ -4,6 +4,7 @@ import com.example.ecommerce_system.dto.orders.OrderItemDto;
 import com.example.ecommerce_system.dto.orders.OrderRequestDto;
 import com.example.ecommerce_system.dto.orders.OrderResponseDto;
 import com.example.ecommerce_system.exception.customer.CustomerNotFoundException;
+import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
 import com.example.ecommerce_system.exception.order.OrderDoesNotExist;
 import com.example.ecommerce_system.exception.product.InsufficientProductStock;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
@@ -136,41 +137,63 @@ public class OrderService {
         Orders existingOrder = orderStore.getOrder(orderId).orElseThrow(
                 () -> new OrderDoesNotExist(orderId.toString()));
 
-        if (request.getStatus() == OrderStatus.PROCESSED &&
-            existingOrder.getStatus() != OrderStatus.PROCESSED) {
+        Orders updatedOrder = switch (request.getStatus()) {
+            case PROCESSED -> processOrder(existingOrder, orderId);
+            case CANCELLED -> cancelOrder(existingOrder);
+            default -> throw new InvalidOrderStatusException("this status is not allowed");
+        };
 
-            List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
+        if (request.getStatus() == OrderStatus.CANCELLED) return buildOrderResponseWithoutItems(updatedOrder);
 
-            List<UUID> productIds = items.stream()
-                    .map(OrderItem::getProductId)
-                    .toList();
+        List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
+        return map(updatedOrder, items);
+    }
 
-            List<Integer> quantities = items.stream()
-                    .map(OrderItem::getQuantity)
-                    .toList();
+    private Orders processOrder(Orders existingOrder, UUID orderId) {
+        if (existingOrder.getStatus() == OrderStatus.PROCESSED) return existingOrder;
 
-            List<Integer> newStocks = new java.util.ArrayList<>();
+        List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
+        List<UUID> productIds = items.stream().map(OrderItem::getProductId).toList();
+        List<Integer> quantities = items.stream().map(OrderItem::getQuantity).toList();
 
-            for (int i = 0; i < productIds.size(); i++) {
-                UUID productId = productIds.get(i);
-                int quantityToDeduct = quantities.get(i);
+        List<Integer> newStocks = validateAndCalculateNewStocks(productIds, quantities);
 
-                Product product = productStore.getProduct(productId)
-                        .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
+        productStore.updateProductStocks(productIds, newStocks);
 
-                int newStock = product.getStockQuantity() - quantityToDeduct;
+        Orders processedOrder = buildOrderWithNewStatus(existingOrder, OrderStatus.PROCESSED);
+        return orderStore.updateOrder(processedOrder);
+    }
 
-                if (newStock < 0) {
-                    throw new InsufficientProductStock(productId.toString());
-                }
+    private List<Integer> validateAndCalculateNewStocks(List<UUID> productIds, List<Integer> quantities) {
+        List<Integer> newStocks = new java.util.ArrayList<>();
 
-                newStocks.add(newStock);
-            }
+        for (int i = 0; i < productIds.size(); i++) {
+            UUID productId = productIds.get(i);
+            int quantityToDeduct = quantities.get(i);
 
-            productStore.updateProductStocks(productIds, newStocks);
+            Product product = productStore.getProduct(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
+
+            int newStock = product.getStockQuantity() - quantityToDeduct;
+            if (newStock < 0) throw new InsufficientProductStock(productId.toString());
+
+            newStocks.add(newStock);
         }
 
-        Orders updatedOrder = Orders.builder()
+        return newStocks;
+    }
+
+    private Orders cancelOrder(Orders existingOrder) {
+        if (existingOrder.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalStateException("Only pending orders can be cancelled");
+        }
+
+        Orders cancelledOrder = buildOrderWithNewStatus(existingOrder, OrderStatus.CANCELLED);
+        return orderStore.updateOrder(cancelledOrder);
+    }
+
+    private Orders buildOrderWithNewStatus(Orders existingOrder, OrderStatus newStatus) {
+        return Orders.builder()
                 .orderId(existingOrder.getOrderId())
                 .customerId(existingOrder.getCustomerId())
                 .orderDate(existingOrder.getOrderDate())
@@ -178,12 +201,20 @@ public class OrderService {
                 .shippingCountry(existingOrder.getShippingCountry())
                 .shippingCity(existingOrder.getShippingCity())
                 .shippingPostalCode(existingOrder.getShippingPostalCode())
-                .status(request.getStatus())
+                .status(newStatus)
                 .build();
+    }
 
-        Orders savedOrder = orderStore.updateOrder(updatedOrder);
-        List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
-
-        return map(savedOrder, items);
+    private OrderResponseDto buildOrderResponseWithoutItems(Orders order) {
+        return OrderResponseDto.builder()
+                .orderId(order.getOrderId())
+                .orderDate(order.getOrderDate())
+                .status(order.getStatus())
+                .shippingCity(order.getShippingCity())
+                .shippingCountry(order.getShippingCountry())
+                .shippingPostalCode(order.getShippingPostalCode())
+                .totalAmount(order.getTotalAmount())
+                .items(null)
+                .build();
     }
 }
