@@ -26,13 +26,15 @@ public class OrderService {
     private ProductStore productStore;
 
     public OrderResponseDto placeOrder(OrderRequestDto request, UUID customerId) {
-        Customer customer = customerStore.getCustomer(customerId).orElseThrow(
+        customerStore.getCustomer(customerId).orElseThrow(
                 () -> new CustomerNotFoundException(customerId.toString()));
 
         var orderId = UUID.randomUUID();
 
         List<OrderItem> items = validateOrderItems(request.getItems(), orderId);
-        double totalAmount = items.stream().mapToDouble(OrderItem::getPriceAtPurchase).sum();
+        double totalAmount = items.stream()
+                .mapToDouble(item -> item.getPriceAtPurchase() * item.getQuantity())
+                .sum();
 
         Orders newOrder = createOrder(orderId, request, customerId, totalAmount);
 
@@ -79,13 +81,13 @@ public class OrderService {
     private OrderResponseDto map(Orders order, List<OrderItem> items) {
         var itemsDto = items.stream().map(this::mapToOrderItemDto).toList();
         return OrderResponseDto.builder()
+                .orderId(order.getOrderId())
                 .items(itemsDto)
                 .orderDate(order.getOrderDate())
                 .status(order.getStatus())
                 .shippingCity(order.getShippingCity())
                 .shippingCountry(order.getShippingCountry())
                 .shippingPostalCode(order.getShippingPostalCode())
-                .orderId(order.getOrderId())
                 .totalAmount(order.getTotalAmount())
                 .build();
     }
@@ -133,6 +135,40 @@ public class OrderService {
     public OrderResponseDto updateOrderStatus(UUID orderId, OrderRequestDto request) {
         Orders existingOrder = orderStore.getOrder(orderId).orElseThrow(
                 () -> new OrderDoesNotExist(orderId.toString()));
+
+        if (request.getStatus() == OrderStatus.PROCESSED &&
+            existingOrder.getStatus() != OrderStatus.PROCESSED) {
+
+            List<OrderItem> items = orderStore.getOrderItemsByOrderId(orderId);
+
+            List<UUID> productIds = items.stream()
+                    .map(OrderItem::getProductId)
+                    .toList();
+
+            List<Integer> quantities = items.stream()
+                    .map(OrderItem::getQuantity)
+                    .toList();
+
+            List<Integer> newStocks = new java.util.ArrayList<>();
+
+            for (int i = 0; i < productIds.size(); i++) {
+                UUID productId = productIds.get(i);
+                int quantityToDeduct = quantities.get(i);
+
+                Product product = productStore.getProduct(productId)
+                        .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
+
+                int newStock = product.getStockQuantity() - quantityToDeduct;
+
+                if (newStock < 0) {
+                    throw new InsufficientProductStock(productId.toString());
+                }
+
+                newStocks.add(newStock);
+            }
+
+            productStore.updateProductStocks(productIds, newStocks);
+        }
 
         Orders updatedOrder = Orders.builder()
                 .orderId(existingOrder.getOrderId())
