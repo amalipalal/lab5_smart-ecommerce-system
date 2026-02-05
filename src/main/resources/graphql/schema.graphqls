@@ -1,8 +1,43 @@
-type Test {
-    id: ID!,
-    name: String!
+enum OrderStatus {
+    PENDING
+    CANCELLED
+    PROCESSED
+}
+
+type OrderItemResponse {
+    orderItemId: ID
+    productId: ID
+    quantity: Int
+    price: Float
+}
+
+type OrderResponseDto {
+    orderId: ID
+    status: OrderStatus
+    orderDate: String
+    totalAmount: Float
+    shippingCountry: String
+    shippingCity: String
+    shippingPostalCode: String
+    items: [OrderItemResponse]
+}
+
+input OrderItemInput {
+    productId: ID!
+    quantity: Int!
+}
+
+input OrderRequest {
+    country: String!
+    city: String!
+    postalCode: String!
+    items: [OrderItemInput!]!
 }
 
 type Query {
-    getTest(id: ID): Test!
+    getCustomerOrders(customerId: ID!, limit: Int = 10, offset: Int = 0): [OrderResponseDto!]!
+}
+
+type Mutation {
+    placeOrder(customerId: ID!, input: OrderRequest!): OrderResponseDto!
 }
