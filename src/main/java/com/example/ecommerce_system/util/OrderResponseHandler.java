@@ -6,6 +6,7 @@ import com.example.ecommerce_system.exception.order.OrderCreationException;
 import com.example.ecommerce_system.exception.order.OrderDoesNotExist;
 import com.example.ecommerce_system.exception.order.OrderRetrievalException;
 import com.example.ecommerce_system.exception.order.OrderUpdateException;
+import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -50,6 +51,16 @@ public class OrderResponseHandler {
     public ResponseEntity<ErrorResponseDto<String>> handleOrderRetrieval(OrderRetrievalException exception) {
         return ErrorResponseHandler.generateErrorMessage(
                 HttpStatus.INTERNAL_SERVER_ERROR,
+                exception.getMessage(),
+                exception.getClass().getSimpleName());
+    }
+
+    @ExceptionHandler(InvalidOrderStatusException.class)
+    public ResponseEntity<ErrorResponseDto<String>> handleInvalidOrderStatus(
+            InvalidOrderStatusException exception
+    ) {
+        return ErrorResponseHandler.generateErrorMessage(
+                HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 exception.getClass().getSimpleName());
     }
