@@ -34,14 +34,5 @@ public class OrderItemDto {
     )
     private Integer quantity;
 
-    @DecimalMin(
-            groups = {OrderItemRequest.class, OrderItemResponse.class, CreateOrderRequest.class},
-            value = "0.01",
-            message = "price must be at least 0.01"
-    )
-    @NotNull(
-            groups = {OrderItemRequest.class, OrderItemResponse.class, CreateOrderRequest.class},
-            message = "price is required"
-    )
     private Double price;
 }
