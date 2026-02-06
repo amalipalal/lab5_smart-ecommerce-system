@@ -1,5 +1,6 @@
 package com.example.ecommerce_system.util;
 
+import com.example.ecommerce_system.exception.cart.*;
 import com.example.ecommerce_system.exception.customer.CustomerNotFoundException;
 import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
 import com.example.ecommerce_system.exception.order.OrderCreationException;
@@ -20,16 +21,22 @@ import java.util.Map;
 @Component
 public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter {
 
-    private static final Map<Class<? extends Exception>, ErrorType> EXCEPTION_ERROR_TYPE_MAP = Map.of(
-            CustomerNotFoundException.class, ErrorType.NOT_FOUND,
-            ProductNotFoundException.class, ErrorType.NOT_FOUND,
-            OrderDoesNotExist.class, ErrorType.NOT_FOUND,
-            InsufficientProductStock.class, ErrorType.BAD_REQUEST,
-            InvalidOrderStatusException.class, ErrorType.BAD_REQUEST,
-            IllegalArgumentException.class, ErrorType.BAD_REQUEST,
-            OrderCreationException.class, ErrorType.INTERNAL_ERROR,
-            OrderUpdateException.class, ErrorType.INTERNAL_ERROR,
-            OrderRetrievalException.class, ErrorType.INTERNAL_ERROR
+    private static final Map<Class<? extends Exception>, ErrorType> EXCEPTION_ERROR_TYPE_MAP = Map.ofEntries(
+            Map.entry(CustomerNotFoundException.class, ErrorType.NOT_FOUND),
+            Map.entry(ProductNotFoundException.class, ErrorType.NOT_FOUND),
+            Map.entry(OrderDoesNotExist.class, ErrorType.NOT_FOUND),
+            Map.entry(InsufficientProductStock.class, ErrorType.BAD_REQUEST),
+            Map.entry(InvalidOrderStatusException.class, ErrorType.BAD_REQUEST),
+            Map.entry(IllegalArgumentException.class, ErrorType.BAD_REQUEST),
+            Map.entry(OrderCreationException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(OrderUpdateException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(OrderRetrievalException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(CartCreationException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(CartRetrievalException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(CartItemAddException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(CartItemRemoveException.class, ErrorType.INTERNAL_ERROR),
+            Map.entry(CartItemAuthorizationException.class, ErrorType.UNAUTHORIZED),
+            Map.entry(CartItemNotFoundException.class, ErrorType.NOT_FOUND)
     );
 
     @Override
