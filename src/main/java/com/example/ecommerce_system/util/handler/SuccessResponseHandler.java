@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.util;
+package com.example.ecommerce_system.util.handler;
 
 import com.example.ecommerce_system.dto.SuccessResponseDto;
 import org.springframework.http.HttpStatus;
