@@ -29,33 +29,41 @@ public class LoggingAspect {
 
     @Around("restControllerLayer() || graphqlControllerLayer()")
     public Object logControllerCall(ProceedingJoinPoint joinPoint) throws Throwable {
-        Logger logger = LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringType());
+        return logMethodExecution(joinPoint, "API Request", "API Response", "API Error");
+    }
 
+    private Object logMethodExecution(ProceedingJoinPoint joinPoint,
+                                      String entryPrefix,
+                                      String successPrefix,
+                                      String errorPrefix) throws Throwable {
+        Logger logger = getLogger(joinPoint);
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
 
-        logger.info("API Request: {}.{}()", className, methodName);
+        logger.info("{}: {}.{}()", entryPrefix, className, methodName);
 
         try {
             Object result = joinPoint.proceed();
-            logger.info("API Response: {}.{}() - Success", className, methodName);
+            logger.info("{}: {}.{}() - Success", successPrefix, className, methodName);
             return result;
         } catch (Exception e) {
-            logger.error("API Error: {}.{}() - {}", className, methodName, e.getMessage());
+            logger.error("{}: {}.{}() - {}", errorPrefix, className, methodName, e.getMessage());
             throw e;
         }
     }
 
+    private Logger getLogger(ProceedingJoinPoint joinPoint) {
+        return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringType());
+    }
+
     @Around("serviceLayer()")
     public Object logServiceCall(ProceedingJoinPoint joinPoint) throws Throwable {
-        Logger logger = LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringType());
-
+        Logger logger = getLogger(joinPoint);
         String className = joinPoint.getSignature().getDeclaringTypeName();
         String methodName = joinPoint.getSignature().getName();
-        Object[] args = joinPoint.getArgs();
 
         logger.debug("Entering: {}.{}() with arguments: {}",
-                className, methodName, Arrays.toString(args));
+                className, methodName, Arrays.toString(joinPoint.getArgs()));
 
         try {
             Object result = joinPoint.proceed();
@@ -69,21 +77,6 @@ public class LoggingAspect {
 
     @Around("repositoryLayer()")
     public Object logRepositoryCall(ProceedingJoinPoint joinPoint) throws Throwable {
-        Logger logger = LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringType());
-
-        String className = joinPoint.getSignature().getDeclaringTypeName();
-        String methodName = joinPoint.getSignature().getName();
-
-        logger.debug("DB Call: {}.{}()", className, methodName);
-
-        try {
-            Object result = joinPoint.proceed();
-            logger.debug("DB Result: {}.{}()", className, methodName);
-            return result;
-        } catch (Exception e) {
-            logger.error("DB Error: {}.{}(): {}", className, methodName, e.getMessage());
-            throw e;
-        }
+        return logMethodExecution(joinPoint, "DB Call", "DB Result", "DB Error");
     }
-
 }
