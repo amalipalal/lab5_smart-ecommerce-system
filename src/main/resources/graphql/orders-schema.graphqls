@@ -34,10 +34,41 @@ input OrderRequest {
     items: [OrderItemInput!]!
 }
 
+type ProductResponseDto {
+    productId: ID
+    categoryId: ID
+    name: String
+    description: String
+    price: Float
+    stock: Int
+    updatedAt: String
+}
+
+type CartItemResponseDto {
+    cartItemId: ID
+    cartId: ID
+    product: ProductResponseDto
+    quantity: Int
+    addedAt: String
+}
+
+input AddCartItemRequestDto {
+    productId: ID!
+    quantity: Int!
+}
+
+input UpdateCartItemRequest {
+    quantity: Int!
+}
+
 type Query {
+    getCustomerCartItems(customerId: ID!): [CartItemResponseDto!]
     getCustomerOrders(customerId: ID!, limit: Int = 10, offset: Int = 0): [OrderResponseDto!]!
 }
 
 type Mutation {
     placeOrder(customerId: ID!, input: OrderRequest!): OrderResponseDto!
+    addCartItem(customerId: ID!, request: AddCartItemRequestDto!): CartItemResponseDto!
+    updateCartItem(customerId: ID!, cartItemId: ID!, request: UpdateCartItemRequest!): CartItemResponseDto!
+    removeFromCart(customerId: ID!, cartItemId: ID!): Boolean
 }
