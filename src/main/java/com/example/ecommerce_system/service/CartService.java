@@ -60,9 +60,7 @@ public class CartService {
     private Cart getOrCreateCartForCustomer(UUID customerId) {
         Optional<Cart> existingCart = this.cartStore.getCartByCustomerId(customerId);
 
-        if (existingCart.isPresent()) {
-            return existingCart.get();
-        }
+        if (existingCart.isPresent()) return existingCart.get();
 
         Cart newCart = Cart.builder()
                 .cartId(UUID.randomUUID())
@@ -149,9 +147,7 @@ public class CartService {
 
         Optional<Cart> cartOpt = this.cartStore.getCartByCustomerId(customerId);
 
-        if (cartOpt.isEmpty()) {
-            return List.of();
-        }
+        if (cartOpt.isEmpty()) return List.of();
 
         List<CartItem> cartItems = this.cartStore.getCartItems(cartOpt.get().getCartId());
 

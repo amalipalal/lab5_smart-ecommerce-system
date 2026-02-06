@@ -110,9 +110,9 @@ public class CartJdbcDao implements CartDao {
             ps.setInt(1, newQuantity);
             ps.setObject(2, cartItemId);
             int rows = ps.executeUpdate();
-            if (rows == 0) {
+            if (rows == 0)
                 throw new DaoException("Failed to update quantity for cart item: " + cartItemId);
-            }
+
         } catch (SQLException e) {
             throw new DaoException("Error updating cart item quantity", e);
         }
@@ -123,9 +123,7 @@ public class CartJdbcDao implements CartDao {
         try (PreparedStatement ps = conn.prepareStatement(FIND_CART_ITEM_BY_ID)) {
             ps.setObject(1, cartItemId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapRowToCartItem(rs));
-                }
+                if (rs.next()) return Optional.of(mapRowToCartItem(rs));
             }
         } catch (SQLException e) {
             throw new DaoException("Failed to find cart item " + cartItemId, e);
@@ -166,9 +164,8 @@ public class CartJdbcDao implements CartDao {
     private List<CartItem> executeQueryForItemList(PreparedStatement ps) throws SQLException {
         List<CartItem> results = new ArrayList<>();
         try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
+            while (rs.next())
                 results.add(mapRowToCartItem(rs));
-            }
         }
         return results;
     }

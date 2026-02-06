@@ -43,9 +43,7 @@ public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter
     protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
         ErrorType errorType = getErrorType(ex);
 
-        if (errorType == null) {
-            return null;
-        }
+        if (errorType == null) return null;
 
         return buildGraphQLError(ex, env, errorType);
     }
