@@ -5,7 +5,7 @@ import com.example.ecommerce_system.dto.orders.OrderRequestDto;
 import com.example.ecommerce_system.dto.orders.OrderResponseDto;
 import com.example.ecommerce_system.dto.orders.UpdateOrderRequest;
 import com.example.ecommerce_system.service.OrderService;
-import com.example.ecommerce_system.util.SuccessResponseHandler;
+import com.example.ecommerce_system.util.handler.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

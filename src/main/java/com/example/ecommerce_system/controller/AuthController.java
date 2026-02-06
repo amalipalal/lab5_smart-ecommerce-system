@@ -5,7 +5,7 @@ import com.example.ecommerce_system.dto.auth.AuthResponseDto;
 import com.example.ecommerce_system.dto.auth.LoginRequestDto;
 import com.example.ecommerce_system.dto.auth.SignupRequestDto;
 import com.example.ecommerce_system.service.AuthService;
-import com.example.ecommerce_system.util.SuccessResponseHandler;
+import com.example.ecommerce_system.util.handler.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

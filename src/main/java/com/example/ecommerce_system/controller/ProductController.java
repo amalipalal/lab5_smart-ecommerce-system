@@ -9,7 +9,7 @@ import com.example.ecommerce_system.dto.product.UpdateProductRequest;
 import com.example.ecommerce_system.dto.review.ReviewResponseDto;
 import com.example.ecommerce_system.service.ProductService;
 import com.example.ecommerce_system.service.ReviewService;
-import com.example.ecommerce_system.util.SuccessResponseHandler;
+import com.example.ecommerce_system.util.handler.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

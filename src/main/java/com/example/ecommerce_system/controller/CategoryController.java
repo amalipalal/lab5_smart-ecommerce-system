@@ -6,7 +6,7 @@ import com.example.ecommerce_system.dto.category.CategoryResponseDto;
 import com.example.ecommerce_system.dto.category.CreateCategoryRequest;
 import com.example.ecommerce_system.dto.category.UpdateCategoryRequest;
 import com.example.ecommerce_system.service.CategoryService;
-import com.example.ecommerce_system.util.SuccessResponseHandler;
+import com.example.ecommerce_system.util.handler.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

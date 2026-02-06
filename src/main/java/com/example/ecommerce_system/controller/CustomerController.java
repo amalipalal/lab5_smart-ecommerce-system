@@ -4,7 +4,7 @@ import com.example.ecommerce_system.dto.SuccessResponseDto;
 import com.example.ecommerce_system.dto.customer.CustomerRequestDto;
 import com.example.ecommerce_system.dto.customer.CustomerResponseDto;
 import com.example.ecommerce_system.service.CustomerService;
-import com.example.ecommerce_system.util.SuccessResponseHandler;
+import com.example.ecommerce_system.util.handler.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
