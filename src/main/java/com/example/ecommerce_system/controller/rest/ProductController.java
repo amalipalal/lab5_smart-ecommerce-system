@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.controller;
+package com.example.ecommerce_system.controller.rest;
 
 import com.example.ecommerce_system.dto.product.ProductFilter;
 import com.example.ecommerce_system.dto.SuccessResponseDto;
