@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.controller;
+package com.example.ecommerce_system.controller.graphql;
 
 import com.example.ecommerce_system.dto.cart.AddCartItem;
 import com.example.ecommerce_system.dto.cart.CartItemRequestDto;
