@@ -68,6 +68,15 @@ public class CartJdbcDao implements CartDao {
         return Optional.empty();
     }
 
+    private Cart mapRowToCart(ResultSet rs) throws SQLException {
+        return new Cart(
+                rs.getObject("cart_id", UUID.class),
+                rs.getObject("customer_id", UUID.class),
+                rs.getTimestamp("created_at").toInstant(),
+                rs.getTimestamp("updated_at").toInstant()
+        );
+    }
+
     @Override
     public void save(Connection conn, Cart cart) throws DaoException {
         try (PreparedStatement ps = conn.prepareStatement(SAVE_CART)) {
@@ -124,6 +133,16 @@ public class CartJdbcDao implements CartDao {
         return Optional.empty();
     }
 
+    private CartItem mapRowToCartItem(ResultSet rs) throws SQLException {
+        return new CartItem(
+                rs.getObject("cart_item_id", UUID.class),
+                rs.getObject("cart_id", UUID.class),
+                rs.getObject("product_id", UUID.class),
+                rs.getInt("quantity"),
+                rs.getTimestamp("added_at").toInstant()
+        );
+    }
+
     @Override
     public void deleteItemById(Connection conn, UUID cartItemId) throws DaoException {
         try (PreparedStatement ps = conn.prepareStatement(DELETE_ITEM)) {
@@ -142,25 +161,6 @@ public class CartJdbcDao implements CartDao {
         } catch (SQLException e) {
             throw new DaoException("Failed to load items for cart " + cartId, e);
         }
-    }
-
-    private Cart mapRowToCart(ResultSet rs) throws SQLException {
-        return new Cart(
-                rs.getObject("cart_id", UUID.class),
-                rs.getObject("customer_id", UUID.class),
-                rs.getTimestamp("created_at").toInstant(),
-                rs.getTimestamp("updated_at").toInstant()
-        );
-    }
-
-    private CartItem mapRowToCartItem(ResultSet rs) throws SQLException {
-        return new CartItem(
-                rs.getObject("cart_item_id", UUID.class),
-                rs.getObject("cart_id", UUID.class),
-                rs.getObject("product_id", UUID.class),
-                rs.getInt("quantity"),
-                rs.getTimestamp("added_at").toInstant()
-        );
     }
 
     private List<CartItem> executeQueryForItemList(PreparedStatement ps) throws SQLException {
