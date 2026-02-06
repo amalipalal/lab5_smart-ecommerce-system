@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("SpellCheckingInspection")
 @Repository
 public class ProductJdbcDao implements ProductDao {
 
@@ -29,10 +30,6 @@ public class ProductJdbcDao implements ProductDao {
             FROM product
             ORDER BY LOWER(name) ASC
             LIMIT ? OFFSET ?
-            """;
-
-    private static final String COUNT_ALL = """
-            SELECT COUNT(*) FROM product
             """;
 
     private static final String FILTER = """
@@ -98,25 +95,6 @@ public class ProductJdbcDao implements ProductDao {
             return executeQueryForList(preparedStatement);
         } catch (SQLException e) {
             throw new DaoException("Failed to load all products", e);
-        }
-    }
-
-    @Override
-    public int countAll(Connection conn) throws DaoException {
-        try (PreparedStatement statement = conn.prepareStatement(COUNT_ALL)) {
-            try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()) {
-                    long rowCount = rs.getLong(1);
-                    if (rowCount > Integer.MAX_VALUE) {
-                        throw new DaoException("Product count exceeds integer range:" + rowCount, null);
-                    }
-                    return (int) rowCount;
-                } else {
-                    return 0;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Failed to get product count", e);
         }
     }
 

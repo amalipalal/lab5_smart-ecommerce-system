@@ -8,7 +8,6 @@ import com.example.ecommerce_system.dao.interfaces.StatementPreparer;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -126,21 +125,6 @@ public class CategoryJdbcDao implements CategoryDao {
     }
 
     @Override
-    public int countByName(Connection conn, String query) throws DaoException {
-        try (PreparedStatement ps = conn.prepareStatement(COUNT_BY_NAME)) {
-            ps.setString(1, "%" + query + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-                return 0;
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Failed to count categories by name", e);
-        }
-    }
-
-    @Override
     public List<Category> findAll(Connection conn, int limit, int offset) throws DaoException {
         List<Category> categories = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(FIND_ALL)) {
@@ -190,24 +174,6 @@ public class CategoryJdbcDao implements CategoryDao {
             });
         } catch (SQLException e) {
             throw new DaoException("Failed to update " + category.getName() + "category.", e);
-        }
-    }
-
-    @Override
-    public int count(Connection conn) throws DaoException {
-        try (PreparedStatement ps = conn.prepareStatement(COUNT)) {
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    long rowCount = rs.getLong(1);
-                    if (rowCount > Integer.MAX_VALUE)
-                        throw new DaoException("Category count exceeds integer range: " + rowCount, null);
-                    return (int) rowCount;
-                } else {
-                    return 0;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Failed to get category count.", e);
         }
     }
 

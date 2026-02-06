@@ -6,7 +6,6 @@ import com.example.ecommerce_system.model.Customer;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public interface CustomerDao {
@@ -40,26 +39,6 @@ public interface CustomerDao {
      * @throws DaoException on Dao errors
      */
     Optional<Customer> findByUserId(Connection connection, UUID userId) throws DaoException;
-
-    /**
-     * Find multiple customers by a set of ids.
-     *
-     * @param connection the {@link java.sql.Connection} to use
-     * @param customerIds set of customer identifiers
-     * @return list of found customers
-     * @throws DaoException on Dao errors
-     */
-    List<Customer> findByIds(Connection connection, Set<UUID> customerIds) throws DaoException;
-
-    /**
-     * Find a customer by email.
-     *
-     * @param connection the {@link java.sql.Connection} to use
-     * @param email customer email
-     * @return optional customer when found
-     * @throws DaoException on DAO errors
-     */
-    Optional<Customer> findByEmail(Connection connection, String email) throws DaoException;
 
     /**
      * Persist a new {@link Customer}.

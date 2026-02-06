@@ -25,14 +25,9 @@ public class ProductStore {
 
     /**
      * Persist a new {@link com.example.ecommerce_system.model.Product} inside a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#save(java.sql.Connection, com.example.ecommerce_system.model.Product)}.
      * On success this method evicts relevant entries in the "products" cache via Spring Cache.
-     *
-     * @param product the product to create
-     * @return the persisted {@link com.example.ecommerce_system.model.Product}
-     * @throws com.example.ecommerce_system.exception.product.ProductCreationException when DAO save fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "products", allEntries = true)
     public Product createProduct(Product product) {
@@ -54,14 +49,9 @@ public class ProductStore {
 
     /**
      * Update an existing {@link com.example.ecommerce_system.model.Product} inside a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#update(java.sql.Connection, com.example.ecommerce_system.model.Product)}.
      * On success this method evicts relevant entries in the "products" cache via Spring Cache.
-     *
-     * @param product product with updated fields
-     * @return the updated {@link com.example.ecommerce_system.model.Product}
-     * @throws com.example.ecommerce_system.exception.product.ProductUpdateException when DAO update fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "products", allEntries = true)
     public Product updateProduct(Product product) {
@@ -82,13 +72,9 @@ public class ProductStore {
 
     /**
      * Delete a product by id inside a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#deleteById(java.sql.Connection, java.util.UUID)}.
      * On success this method evicts relevant entries in the "products" cache via Spring Cache.
-     *
-     * @param productId product identifier
-     * @throws com.example.ecommerce_system.exception.product.DeleteProductException when DAO delete fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "products", allEntries = true)
     public void deleteProduct(UUID productId) {
@@ -107,15 +93,10 @@ public class ProductStore {
     }
 
     /**
-     * Retrieve a product by id.
-     *
+     * Load a product by id.
+     * <p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.ProductDao#findById(java.sql.Connection, java.util.UUID)}.
-     * The returned value is cached in the "products" cache using Spring's cache abstraction.
-     *
-     * @param productId product identifier
-     * @return an {@link Optional} containing the {@link com.example.ecommerce_system.model.Product} when found
-     * @throws com.example.ecommerce_system.exception.product.ProductRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
+     * Results are cached in the "products" cache using Spring Cache.
      */
     @Cacheable(value = "products", key = "'product:' + #productId")
     public Optional<Product> getProduct(UUID productId) {
@@ -130,15 +111,9 @@ public class ProductStore {
 
     /**
      * Retrieve all products with pagination.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#findAll(java.sql.Connection, int, int)}.
      * Results are cached in the "products" cache using Spring Cache.
-     *
-     * @param limit maximum number of results
-     * @param offset zero-based offset
-     * @return list of {@link com.example.ecommerce_system.model.Product}
-     * @throws com.example.ecommerce_system.exception.product.ProductRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "products", key = "'all:' + #limit + ':' + #offset")
     public List<Product> getAllProducts(int limit, int offset) {
@@ -153,16 +128,9 @@ public class ProductStore {
 
     /**
      * Search products using a {@link ProductFilter} with paging.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#findFiltered(java.sql.Connection, ProductFilter, int, int)}.
      * Results are cached in the "products" cache using Spring Cache.
-     *
-     * @param filter filter criteria
-     * @param limit maximum number of results
-     * @param offset zero-based offset
-     * @return list of matching {@link com.example.ecommerce_system.model.Product}
-     * @throws com.example.ecommerce_system.exception.product.ProductSearchException when DAO search fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "products", key = "'search:' + #filter.hashCode() + ':' + #limit + ':' + #offset")
     public List<Product> searchProducts(ProductFilter filter, int limit, int offset) {
@@ -177,14 +145,9 @@ public class ProductStore {
 
     /**
      * Count products matching a filter.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.ProductDao#countFiltered(java.sql.Connection, ProductFilter)}.
      * Results are cached in the "products" cache using Spring Cache.
-     *
-     * @param filter filter criteria
-     * @return count of matching products
-     * @throws com.example.ecommerce_system.exception.product.ProductSearchException when DAO count fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "products", key = "'count:' + #filter.hashCode()")
     public int countProductsByFilter(ProductFilter filter) {
@@ -199,12 +162,6 @@ public class ProductStore {
 
     /**
      * Update stock for multiple products inside a transaction.
-     *
-     * @param productIds list of product identifiers
-     * @param stockChanges list of stock changes corresponding to the product IDs
-     * @throws IllegalArgumentException when the sizes of productIds and stockChanges do not match
-     * @throws com.example.ecommerce_system.exception.product.ProductUpdateException when DAO update fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "products", allEntries = true)
     public void updateProductStocks(List<UUID> productIds, List<Integer> stockChanges) {

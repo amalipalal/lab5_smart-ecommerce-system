@@ -24,15 +24,10 @@ public class CategoryStore {
 
     /**
      * Persist a new {@link com.example.ecommerce_system.model.Category} within a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#save(java.sql.Connection, com.example.ecommerce_system.model.Category)}.
      * On success this method evicts relevant entries in the "categories" cache via the Spring Cache abstraction
      * (see the {@link org.springframework.cache.annotation.CacheEvict} annotation applied to this method).
-     *
-     * @param category the category to create
-     * @return the persisted {@link com.example.ecommerce_system.model.Category}
-     * @throws CategoryCreationException when Dao persistence fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "categories", allEntries = true)
     public Category createCategory(Category category) {
@@ -53,15 +48,10 @@ public class CategoryStore {
 
     /**
      * Update an existing {@link com.example.ecommerce_system.model.Category} inside a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#update(java.sql.Connection, com.example.ecommerce_system.model.Category)}.
      * On success this method evicts relevant entries in the "categories" cache via the Spring Cache abstraction
      * (see the {@link org.springframework.cache.annotation.CacheEvict} annotation applied to this method).
-     *
-     * @param category the category with updated fields
-     * @return the updated {@link com.example.ecommerce_system.model.Category}
-     * @throws CategoryUpdateException when DAO update fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "categories", allEntries = true)
     public Category updateCategory(Category category) {
@@ -82,15 +72,10 @@ public class CategoryStore {
 
     /**
      * Load a category by id.
-     *
+     * <p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#findById(java.sql.Connection, java.util.UUID)}.
      * The returned value is cached in the "categories" cache using Spring's cache abstraction
      * (see the {@link org.springframework.cache.annotation.Cacheable} annotation applied to this method).
-     *
-     * @param id category identifier
-     * @return an {@link Optional} containing the Category when found
-     * @throws CategoryRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'category:' + #id")
     public Optional<Category> getCategory(UUID id) {
@@ -105,15 +90,10 @@ public class CategoryStore {
 
     /**
      * Load a category by name.
-     *
+     * <p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#findByName(java.sql.Connection, String)}.
      * The returned value is cached in the "categories" cache using Spring's cache abstraction
      * (see the {@link org.springframework.cache.annotation.Cacheable} annotation applied to this method).
-     *
-     * @param name category name
-     * @return an {@link Optional} containing the Category when found
-     * @throws CategoryRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'name:' + #name")
     public Optional<Category> getCategoryByName(String name) {
@@ -128,16 +108,9 @@ public class CategoryStore {
 
     /**
      * Search categories by name with simple paging.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#searchByName(java.sql.Connection, String, int, int)}.
      * Results are cached in the "categories" cache using Spring Cache (@Cacheable) keyed by the search parameters.
-     *
-     * @param query substring to search for
-     * @param limit maximum results
-     * @param offset zero-based offset
-     * @return list of matching {@link com.example.ecommerce_system.model.Category}
-     * @throws CategorySearchException when DAO search fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'search:' + #query + ':' + #limit + ':' + #offset")
     public List<Category> searchByName(String query, int limit, int offset) {
@@ -152,15 +125,9 @@ public class CategoryStore {
 
     /**
      * Retrieve a page of all categories.
-     *
+     * <p>
      * Results are loaded via {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#findAll(java.sql.Connection, int, int)}.
      * The returned page is cached in the "categories" cache using Spring Cache (@Cacheable).
-     *
-     * @param limit  maximum number of categories to return
-     * @param offset zero-based offset for paging
-     * @return list of {@link com.example.ecommerce_system.model.Category} for the requested page
-     * @throws CategoryRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "categories", key = "'all:' + #limit + ':' + #offset")
     public List<Category> findAll(int limit, int offset) {
@@ -173,37 +140,11 @@ public class CategoryStore {
         }
     }
 
-    @Cacheable(value = "categories", key = "'count'")
-    public int count() {
-        try (Connection conn = dataSource.getConnection()) {
-            return categoryDao.count(conn);
-        } catch (DaoException e) {
-            throw new CategorySearchException("Failed to count categories");
-        } catch (SQLException e) {
-            throw new DatabaseConnectionException(e);
-        }
-    }
-
-    @Cacheable(value = "categories", key = "'count' + #query")
-    public int countByName(String query) {
-        try (Connection conn = dataSource.getConnection()) {
-            return categoryDao.countByName(conn, query);
-        } catch (DaoException e) {
-            throw new CategorySearchException("Failed to count categories by name");
-        } catch (SQLException e) {
-            throw new DatabaseConnectionException(e);
-        }
-    }
-
     /**
      * Delete a category by id inside a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CategoryDao#delete(java.sql.Connection, java.util.UUID)}.
      * On success this method evicts relevant entries in the "categories" cache via Spring Cache.
-     *
-     * @param id identifier of the category to delete
-     * @throws CategoryDeletionException when the category has products or deletion fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "categories", allEntries = true)
     public void deleteCategory(UUID id) {

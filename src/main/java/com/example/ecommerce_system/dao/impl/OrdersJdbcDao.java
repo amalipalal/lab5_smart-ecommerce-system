@@ -56,10 +56,6 @@ public class OrdersJdbcDao implements OrdersDao {
         WHERE order_id = ?
         """;
 
-    private static final String DELETE = """
-        DELETE FROM orders WHERE order_id = ?
-        """;
-
     @Override
     public Optional<Orders> findById(Connection conn, UUID orderId) throws DaoException {
         try (PreparedStatement ps = conn.prepareStatement(FIND_BY_ID)) {

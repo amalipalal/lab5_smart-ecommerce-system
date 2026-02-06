@@ -1,4 +1,4 @@
-package com.example.ecommerce_system.util;
+package com.example.ecommerce_system.util.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 
+@SuppressWarnings("SpellCheckingInspection")
 @Aspect
 @Component
 public class PerformanceAspect {

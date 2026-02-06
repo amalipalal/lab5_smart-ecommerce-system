@@ -62,16 +62,6 @@ public interface CategoryDao {
     Optional<Category> findByName(Connection connection, String name) throws DaoException;
 
     /**
-     * Count categories matching a name query.
-     *
-     * @param connection the {@link java.sql.Connection} to use
-     * @param query name substring
-     * @return number of matching categories
-     * @throws DaoException on Dao errors
-     */
-    int countByName(Connection connection, String query) throws DaoException;
-
-    /**
      * Retrieve all categories with paging.
      *
      * @param connection the {@link java.sql.Connection} to use
@@ -81,15 +71,6 @@ public interface CategoryDao {
      * @throws DaoException on Dao errors
      */
     List<Category> findAll(Connection connection, int limit, int offset) throws DaoException;
-
-    /**
-     * Count all categories.
-     *
-     * @param connection the {@link java.sql.Connection} to use
-     * @return total number of categories
-     * @throws DaoException on Dao errors
-     */
-    int count(Connection connection) throws DaoException;
 
     /**
      * Delete a category by id.

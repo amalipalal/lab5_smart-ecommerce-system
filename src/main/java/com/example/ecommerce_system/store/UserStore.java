@@ -29,13 +29,8 @@ public class UserStore {
 
     /**
      * Persist a new {@link com.example.ecommerce_system.model.User} within a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.UserDao#save(java.sql.Connection, com.example.ecommerce_system.model.User)}.
-     *
-     * @param user the user to create
-     * @return the persisted {@link com.example.ecommerce_system.model.User}
-     * @throws UserCreationException when Dao persistence fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Caching(
         put = {
@@ -62,15 +57,10 @@ public class UserStore {
 
     /**
      * Load a user by email.
-     *
+     * <p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.UserDao#findByEmail(java.sql.Connection, String)}.
      * The returned value is cached in the "users" cache using Spring's cache abstraction
      * (see the {@link org.springframework.cache.annotation.Cacheable} annotation applied to this method).
-     *
-     * @param email user email
-     * @return an {@link Optional} containing the User when found
-     * @throws UserRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "users", key = "'email:' + #email")
     public Optional<User> getUserByEmail(String email) {

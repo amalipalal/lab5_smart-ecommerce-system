@@ -27,10 +27,8 @@ public class ProductService {
     private final CategoryService categoryService;
 
     /**
-     * Create a new product and persist it via {@link com.example.ecommerce_system.store.ProductStore#createProduct(com.example.ecommerce_system.model.Product)}.
-     *
-     * @param request the incoming {@link com.example.ecommerce_system.dto.product.ProductRequestDto}
-     * @return a {@link com.example.ecommerce_system.dto.product.ProductResponseDto} containing identifiers and timestamps for the new product
+     * Create a new product.
+     * Validates that the category exists before creating the product.
      */
     public ProductResponseDto createProduct(ProductRequestDto request) {
         checkThatCategoryExists(request.getCategoryId());
@@ -66,45 +64,27 @@ public class ProductService {
                 .build();
     }
 
-    /**
-     * Retrieve a product by id.
-     *
-     * Uses {@link com.example.ecommerce_system.store.ProductStore#getProduct(java.util.UUID)} and throws {@link com.example.ecommerce_system.exception.product.ProductNotFoundException}
-     * when no product is found.
-     *
-     * @param productId the product identifier
-     * @return a {@link com.example.ecommerce_system.dto.product.ProductResponseDto} for the found product
-     * @throws com.example.ecommerce_system.exception.product.ProductNotFoundException if the product does not exist
-     */
     public ProductResponseDto getProduct(UUID productId) {
         Product product = this.productStore.getProduct(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
         return map(product);
     }
 
+    /**
+     * Retrieve all products with pagination.
+     */
     public List<ProductResponseDto> getAllProducts(int limit, int offset) {
         List<Product> products = this.productStore.getAllProducts(limit, offset);
         return products.stream().map(this::map).toList();
     }
 
-    /**
-     * Count products matching a filter.
-     *
-     * @param filter the {@link ProductFilter} criteria
-     * @return number of products matching the filter
-     */
     public int countProductsByFilter(ProductFilter filter) {
         return this.productStore.countProductsByFilter(filter);
     }
 
     /**
-     * Delete a product by id.
-     *
-     * Ensures the product exists by calling {@link com.example.ecommerce_system.store.ProductStore#getProduct(java.util.UUID)} before delegating
-     * to {@link com.example.ecommerce_system.store.ProductStore#deleteProduct(java.util.UUID)}.
-     *
-     * @param productId the product identifier to delete
-     * @throws com.example.ecommerce_system.exception.product.ProductNotFoundException if the product does not exist
+     * Delete a product by ID.
+     * Validates that the product exists before deletion.
      */
     public void deleteProduct(UUID productId) {
         Product existing = this.productStore.getProduct(productId).orElseThrow(
@@ -113,14 +93,7 @@ public class ProductService {
     }
 
     /**
-     * Search for products using a filter with paging.
-     *
-     * Delegates to {@link com.example.ecommerce_system.store.ProductStore#searchProducts(ProductFilter, int, int)}.
-     *
-     * @param filter the {@link ProductFilter} to apply
-     * @param limit  maximum number of results
-     * @param offset zero-based offset for paging
-     * @return list of {@link com.example.ecommerce_system.dto.product.ProductResponseDto}
+     * Search for products using a filter with pagination.
      */
     public List<ProductResponseDto> searchProducts(ProductFilter filter, int limit, int offset) {
         List<Product> products = this.productStore.searchProducts(filter, limit, offset);
@@ -129,13 +102,7 @@ public class ProductService {
 
     /**
      * Update an existing product.
-     *
-     * Validates presence of the product via {@link com.example.ecommerce_system.store.ProductStore#getProduct(java.util.UUID)} and
-     * delegates persistence to {@link com.example.ecommerce_system.store.ProductStore#updateProduct(com.example.ecommerce_system.model.Product)}.
-     *
-     * @param productId the product id to update
-     * @param request   the incoming {@link com.example.ecommerce_system.dto.product.ProductRequestDto} with optional fields
-     * @throws com.example.ecommerce_system.exception.product.ProductNotFoundException if the target product does not exist
+     * Validates product existence and merges provided fields with existing values.
      */
     public ProductResponseDto updateProduct(UUID productId, ProductRequestDto request) {
         Product existing = this.productStore.getProduct(productId)
@@ -157,7 +124,8 @@ public class ProductService {
     }
 
     /**
-     * Get all products with their categories and reviews
+     * Get all products with their categories and reviews.
+     * Each product includes a limited number of reviews based on reviewLimit parameter.
      */
     public List<ProductWithReviewsDto> getAllProductsWithReviews(int limit, int offset, int reviewLimit) {
         List<Product> products = this.productStore.getAllProducts(limit, offset);

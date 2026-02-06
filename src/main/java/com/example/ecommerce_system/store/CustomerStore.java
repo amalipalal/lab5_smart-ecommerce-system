@@ -24,14 +24,9 @@ public class CustomerStore {
 
     /**
      * Update an existing {@link com.example.ecommerce_system.model.Customer} inside a transaction.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#update(java.sql.Connection, com.example.ecommerce_system.model.Customer)}.
      * On success this method evicts relevant entries in the "customers" cache via Spring Cache.
-     *
-     * @param customer customer with updated fields
-     * @return the updated {@link com.example.ecommerce_system.model.Customer}
-     * @throws com.example.ecommerce_system.exception.customer.CustomerUpdateException when DAO update fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "customers", allEntries = true)
     public Customer updateCustomer(Customer customer) {
@@ -52,14 +47,9 @@ public class CustomerStore {
 
     /**
      * Retrieve a customer by customer id.
-     *
+     * <p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#findById(java.sql.Connection, java.util.UUID)}.
      * The returned value is cached in the "customers" cache using Spring's cache abstraction.
-     *
-     * @param customerId customer identifier
-     * @return an {@link Optional} containing the {@link com.example.ecommerce_system.model.Customer} when found
-     * @throws com.example.ecommerce_system.exception.customer.CustomerRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "customers", key = "'customer:' + #customerId")
     public Optional<Customer> getCustomer(UUID customerId) {
@@ -90,15 +80,9 @@ public class CustomerStore {
 
     /**
      * Retrieve all customers with pagination.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#findAll(java.sql.Connection, int, int)}.
      * Results are cached in the "customers" cache using Spring Cache.
-     *
-     * @param limit maximum number of results
-     * @param offset zero-based offset
-     * @return list of {@link com.example.ecommerce_system.model.Customer}
-     * @throws com.example.ecommerce_system.exception.customer.CustomerRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "customers", key = "'all:' + #limit + ':' + #offset")
     public List<Customer> getAllCustomers(int limit, int offset) {
@@ -113,16 +97,9 @@ public class CustomerStore {
 
     /**
      * Search customers by query string matching first name, last name, or email.
-     *
+     * <p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CustomerDao#search(java.sql.Connection, String, int, int)}.
      * Results are cached in the "customers" cache using Spring Cache.
-     *
-     * @param query search query string
-     * @param limit maximum number of results
-     * @param offset zero-based offset
-     * @return list of matching {@link com.example.ecommerce_system.model.Customer}
-     * @throws com.example.ecommerce_system.exception.customer.CustomerSearchException when DAO search fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "customers", key = "'search:' + #query + ':' + #limit + ':' + #offset")
     public List<Customer> searchCustomers(String query, int limit, int offset) {

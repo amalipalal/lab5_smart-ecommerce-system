@@ -34,15 +34,6 @@ public interface ProductDao {
     List<Product> findAll(Connection connection, int limit, int offset) throws DaoException;
 
     /**
-     * Count all products.
-     *
-     * @param connection the {@link java.sql.Connection} to use
-     * @return total number of products
-     * @throws DaoException on DAO errors
-     */
-    int countAll(Connection connection) throws DaoException;
-
-    /**
      * Find products matching a {@link ProductFilter}.
      *
      * @param connection the {@link java.sql.Connection} to use
