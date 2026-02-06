@@ -51,6 +51,41 @@ public class CartService {
         return mapToDto(cartItem);
     }
 
+    private void checkThatProductExists(UUID productId) {
+        productStore.getProduct(productId).orElseThrow(
+                () -> new ProductNotFoundException(productId.toString())
+        );
+    }
+
+    private Cart getOrCreateCartForCustomer(UUID customerId) {
+        Optional<Cart> existingCart = this.cartStore.getCartByCustomerId(customerId);
+
+        if (existingCart.isPresent()) {
+            return existingCart.get();
+        }
+
+        Cart newCart = Cart.builder()
+                .cartId(UUID.randomUUID())
+                .customerId(customerId)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        return this.cartStore.createCart(newCart);
+    }
+
+    private CartItemResponseDto mapToDto(CartItem cartItem) {
+        var product = this.productService.getProduct(cartItem.getProductId());
+
+        return CartItemResponseDto.builder()
+                .cartItemId(cartItem.getCartItemId())
+                .cartId(cartItem.getCartId())
+                .product(product)
+                .quantity(cartItem.getQuantity())
+                .addedAt(cartItem.getAddedAt())
+                .build();
+    }
+
     /**
      * Remove a cart item from the customer's cart.
      * Checks that the cart item exists and belongs to the customer.
@@ -64,6 +99,12 @@ public class CartService {
         checkCartItemAuthorization(customerId, cartItem);
 
         cartStore.removeCartItem(cartItemId);
+    }
+
+    private void checkThatCustomerExists(UUID customerId) {
+        customerStore.getCustomer(customerId).orElseThrow(
+                () -> new CustomerNotFoundException(customerId.toString())
+        );
     }
 
     /**
@@ -117,50 +158,5 @@ public class CartService {
         return cartItems.stream()
                 .map(this::mapToDto)
                 .toList();
-    }
-
-    /**
-     * Get or create a cart for a customer. If the customer already has a cart, return it.
-     * Otherwise, create a new cart.
-     */
-    private Cart getOrCreateCartForCustomer(UUID customerId) {
-        Optional<Cart> existingCart = this.cartStore.getCartByCustomerId(customerId);
-
-        if (existingCart.isPresent()) {
-            return existingCart.get();
-        }
-
-        Cart newCart = Cart.builder()
-                .cartId(UUID.randomUUID())
-                .customerId(customerId)
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
-
-        return this.cartStore.createCart(newCart);
-    }
-
-    private void checkThatCustomerExists(UUID customerId) {
-        customerStore.getCustomer(customerId).orElseThrow(
-                () -> new CustomerNotFoundException(customerId.toString())
-        );
-    }
-
-    private void checkThatProductExists(UUID productId) {
-        productStore.getProduct(productId).orElseThrow(
-                () -> new ProductNotFoundException(productId.toString())
-        );
-    }
-
-    private CartItemResponseDto mapToDto(CartItem cartItem) {
-        var product = this.productService.getProduct(cartItem.getProductId());
-
-        return CartItemResponseDto.builder()
-                .cartItemId(cartItem.getCartItemId())
-                .cartId(cartItem.getCartId())
-                .product(product)
-                .quantity(cartItem.getQuantity())
-                .addedAt(cartItem.getAddedAt())
-                .build();
     }
 }
