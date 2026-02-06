@@ -182,6 +182,7 @@ public class OrdersStore {
      * @throws com.example.ecommerce_system.exception.order.OrderRetrievalException when DAO retrieval fails
      * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
+    @Cacheable(value = "orders", key="'order:processed:' + #customerId + ':' + #productId")
     public boolean hasProcessedOrderWithProduct(UUID customerId, UUID productId) {
         try (Connection conn = dataSource.getConnection()) {
             return this.ordersDao.hasProcessedOrderWithProduct(conn, customerId, productId);
