@@ -1,15 +1,15 @@
 package com.example.ecommerce_system.dto.product;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @AllArgsConstructor
 @Data
-@SuperBuilder
+@Builder
 public class ProductResponseDto {
     private UUID productId;
     private UUID categoryId;
