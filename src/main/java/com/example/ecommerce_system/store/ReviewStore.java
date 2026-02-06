@@ -40,8 +40,6 @@ public class ReviewStore {
                 return review;
             } catch (DaoException e) {
                 conn.rollback();
-                e.printStackTrace();
-                System.out.println("ERROR" + e.getMessage());
                 throw new ReviewCreationException(review.getProductId().toString());
             }
         } catch (SQLException e) {
