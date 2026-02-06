@@ -61,9 +61,34 @@ input UpdateCartItemRequest {
     quantity: Int!
 }
 
+type CustomerResponseDto {
+    customerId: ID
+    firstName: String
+    lastName: String
+    email: String
+    createdAt: String
+}
+
+type ReviewResponseDto {
+    reviewId: ID
+    productId: ID
+    customer: CustomerResponseDto
+    rating: Int
+    comment: String
+    createdAt: String
+}
+
+input ReviewRequestDto {
+    rating: Int!
+    comment: JSON!
+}
+
+scalar JSON
+
 type Query {
     getCustomerCartItems(customerId: ID!): [CartItemResponseDto!]
     getCustomerOrders(customerId: ID!, limit: Int = 10, offset: Int = 0): [OrderResponseDto!]!
+    getProductReviews(productId: ID!, limit: Int = 10, offset: Int = 0): [ReviewResponseDto!]!
 }
 
 type Mutation {
@@ -71,4 +96,5 @@ type Mutation {
     addCartItem(customerId: ID!, request: AddCartItemRequestDto!): CartItemResponseDto!
     updateCartItem(customerId: ID!, cartItemId: ID!, request: UpdateCartItemRequest!): CartItemResponseDto!
     removeFromCart(customerId: ID!, cartItemId: ID!): Boolean
+    createReview(productId: ID!, customerId: ID!, request: ReviewRequestDto!): ReviewResponseDto!
 }
