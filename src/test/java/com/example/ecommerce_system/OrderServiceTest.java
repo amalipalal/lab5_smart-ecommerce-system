@@ -4,6 +4,7 @@ import com.example.ecommerce_system.dto.orders.OrderItemDto;
 import com.example.ecommerce_system.dto.orders.OrderRequestDto;
 import com.example.ecommerce_system.dto.orders.OrderResponseDto;
 import com.example.ecommerce_system.exception.customer.CustomerNotFoundException;
+import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
 import com.example.ecommerce_system.exception.order.OrderDoesNotExist;
 import com.example.ecommerce_system.exception.product.InsufficientProductStock;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
@@ -45,6 +46,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should place order successfully")
     void shouldPlaceOrderSuccessfully() {
+        UUID userId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
 
@@ -84,16 +86,16 @@ class OrderServiceTest {
                 .shippingPostalCode("00233")
                 .build();
 
-        when(customerStore.getCustomer(customerId)).thenReturn(Optional.of(customer));
+        when(customerStore.getCustomerByUserId(userId)).thenReturn(Optional.of(customer));
         when(productStore.getProduct(productId)).thenReturn(Optional.of(product));
         when(orderStore.createOrder(any(Orders.class), anyList())).thenReturn(savedOrder);
 
-        OrderResponseDto response = orderService.placeOrder(request, customerId);
+        OrderResponseDto response = orderService.placeOrder(request, userId);
 
         Assertions.assertNotNull(response.getOrderId());
         Assertions.assertEquals(OrderStatus.PENDING, response.getStatus());
         Assertions.assertEquals(1, response.getItems().size());
-        verify(customerStore).getCustomer(customerId);
+        verify(customerStore).getCustomerByUserId(userId);
         verify(productStore).getProduct(productId);
         verify(orderStore).createOrder(any(Orders.class), anyList());
     }
@@ -101,25 +103,26 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should throw error when placing order for non-existing customer")
     void shouldThrowWhenPlacingOrderForNonExistingCustomer() {
-        UUID customerId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         OrderRequestDto request = OrderRequestDto.builder()
                 .items(List.of())
                 .build();
 
-        when(customerStore.getCustomer(customerId)).thenReturn(Optional.empty());
+        when(customerStore.getCustomerByUserId(userId)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(
                 CustomerNotFoundException.class,
-                () -> orderService.placeOrder(request, customerId)
+                () -> orderService.placeOrder(request, userId)
         );
 
-        verify(customerStore).getCustomer(customerId);
+        verify(customerStore).getCustomerByUserId(userId);
         verify(orderStore, never()).createOrder(any(), anyList());
     }
 
     @Test
     @DisplayName("Should throw error when product not found")
     void shouldThrowWhenProductNotFound() {
+        UUID userId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
 
@@ -136,12 +139,12 @@ class OrderServiceTest {
                 .items(List.of(itemDto))
                 .build();
 
-        when(customerStore.getCustomer(customerId)).thenReturn(Optional.of(customer));
+        when(customerStore.getCustomerByUserId(userId)).thenReturn(Optional.of(customer));
         when(productStore.getProduct(productId)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(
                 ProductNotFoundException.class,
-                () -> orderService.placeOrder(request, customerId)
+                () -> orderService.placeOrder(request, userId)
         );
 
         verify(productStore).getProduct(productId);
@@ -151,6 +154,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should throw error when insufficient product stock")
     void shouldThrowWhenInsufficientStock() {
+        UUID userId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
 
@@ -172,12 +176,12 @@ class OrderServiceTest {
                 .items(List.of(itemDto))
                 .build();
 
-        when(customerStore.getCustomer(customerId)).thenReturn(Optional.of(customer));
+        when(customerStore.getCustomerByUserId(userId)).thenReturn(Optional.of(customer));
         when(productStore.getProduct(productId)).thenReturn(Optional.of(product));
 
         Assertions.assertThrows(
                 InsufficientProductStock.class,
-                () -> orderService.placeOrder(request, customerId)
+                () -> orderService.placeOrder(request, userId)
         );
 
         verify(orderStore, never()).createOrder(any(), anyList());
@@ -359,6 +363,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should calculate total amount correctly for multiple items")
     void shouldCalculateTotalAmountForMultipleItems() {
+        UUID userId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         UUID productId1 = UUID.randomUUID();
         UUID productId2 = UUID.randomUUID();
@@ -399,7 +404,7 @@ class OrderServiceTest {
         Orders savedOrder = Orders.builder()
                 .orderId(UUID.randomUUID())
                 .customerId(customerId)
-                .totalAmount(1000.0)
+                .totalAmount(1900.0)
                 .status(OrderStatus.PENDING)
                 .orderDate(Instant.now())
                 .shippingCity("Accra")
@@ -407,14 +412,187 @@ class OrderServiceTest {
                 .shippingPostalCode("00233")
                 .build();
 
-        when(customerStore.getCustomer(customerId)).thenReturn(Optional.of(customer));
+        when(customerStore.getCustomerByUserId(userId)).thenReturn(Optional.of(customer));
         when(productStore.getProduct(productId1)).thenReturn(Optional.of(product1));
         when(productStore.getProduct(productId2)).thenReturn(Optional.of(product2));
         when(orderStore.createOrder(any(Orders.class), anyList())).thenReturn(savedOrder);
 
-        OrderResponseDto response = orderService.placeOrder(request, customerId);
+        OrderResponseDto response = orderService.placeOrder(request, userId);
 
         Assertions.assertEquals(2, response.getItems().size());
         verify(orderStore).createOrder(any(Orders.class), anyList());
+    }
+
+    @Test
+    @DisplayName("Should update order status to PROCESSED successfully")
+    void shouldUpdateOrderStatusToProcessed() {
+        UUID orderId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        Orders existingOrder = Orders.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .totalAmount(1200.0)
+                .status(OrderStatus.PENDING)
+                .orderDate(Instant.now())
+                .build();
+
+        OrderItem item = OrderItem.builder()
+                .orderItemId(UUID.randomUUID())
+                .orderId(orderId)
+                .productId(productId)
+                .quantity(2)
+                .priceAtPurchase(600.0)
+                .build();
+
+        Product product = Product.builder()
+                .productId(productId)
+                .stockQuantity(10)
+                .build();
+
+        Orders processedOrder = Orders.builder()
+                .orderId(orderId)
+                .customerId(existingOrder.getCustomerId())
+                .totalAmount(1200.0)
+                .status(OrderStatus.PROCESSED)
+                .orderDate(existingOrder.getOrderDate())
+                .build();
+
+        OrderRequestDto request = OrderRequestDto.builder()
+                .status(OrderStatus.PROCESSED)
+                .build();
+
+        when(orderStore.getOrder(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderStore.getOrderItemsByOrderId(orderId)).thenReturn(List.of(item));
+        when(productStore.getProduct(productId)).thenReturn(Optional.of(product));
+        when(orderStore.updateOrder(any(Orders.class))).thenReturn(processedOrder);
+
+        OrderResponseDto response = orderService.updateOrderStatus(orderId, request);
+
+        Assertions.assertEquals(OrderStatus.PROCESSED, response.getStatus());
+        verify(productStore).updateProductStocks(anyList(), anyList());
+        verify(orderStore).updateOrder(any(Orders.class));
+    }
+
+    @Test
+    @DisplayName("Should update order status to CANCELLED successfully")
+    void shouldUpdateOrderStatusToCancelled() {
+        UUID orderId = UUID.randomUUID();
+
+        Orders existingOrder = Orders.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .totalAmount(1200.0)
+                .status(OrderStatus.PENDING)
+                .orderDate(Instant.now())
+                .build();
+
+        Orders cancelledOrder = Orders.builder()
+                .orderId(orderId)
+                .customerId(existingOrder.getCustomerId())
+                .totalAmount(1200.0)
+                .status(OrderStatus.CANCELLED)
+                .orderDate(existingOrder.getOrderDate())
+                .build();
+
+        OrderRequestDto request = OrderRequestDto.builder()
+                .status(OrderStatus.CANCELLED)
+                .build();
+
+        when(orderStore.getOrder(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderStore.updateOrder(any(Orders.class))).thenReturn(cancelledOrder);
+
+        OrderResponseDto response = orderService.updateOrderStatus(orderId, request);
+
+        Assertions.assertEquals(OrderStatus.CANCELLED, response.getStatus());
+        Assertions.assertNull(response.getItems());
+        verify(orderStore).updateOrder(any(Orders.class));
+        verify(orderStore, never()).getOrderItemsByOrderId(orderId);
+    }
+
+    @Test
+    @DisplayName("Should throw error when cancelling non-pending order")
+    void shouldThrowWhenCancellingNonPendingOrder() {
+        UUID orderId = UUID.randomUUID();
+
+        Orders existingOrder = Orders.builder()
+                .orderId(orderId)
+                .status(OrderStatus.PROCESSED)
+                .build();
+
+        OrderRequestDto request = OrderRequestDto.builder()
+                .status(OrderStatus.CANCELLED)
+                .build();
+
+        when(orderStore.getOrder(orderId)).thenReturn(Optional.of(existingOrder));
+
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> orderService.updateOrderStatus(orderId, request)
+        );
+
+        verify(orderStore, never()).updateOrder(any());
+    }
+
+    @Test
+    @DisplayName("Should throw error when updating with invalid status")
+    void shouldThrowWhenUpdatingWithInvalidStatus() {
+        UUID orderId = UUID.randomUUID();
+
+        Orders existingOrder = Orders.builder()
+                .orderId(orderId)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        OrderRequestDto request = OrderRequestDto.builder()
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderStore.getOrder(orderId)).thenReturn(Optional.of(existingOrder));
+
+        Assertions.assertThrows(
+                InvalidOrderStatusException.class,
+                () -> orderService.updateOrderStatus(orderId, request)
+        );
+
+        verify(orderStore, never()).updateOrder(any());
+    }
+
+    @Test
+    @DisplayName("Should throw error when processing order with insufficient stock")
+    void shouldThrowWhenProcessingOrderWithInsufficientStock() {
+        UUID orderId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        Orders existingOrder = Orders.builder()
+                .orderId(orderId)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        OrderItem item = OrderItem.builder()
+                .productId(productId)
+                .quantity(10)
+                .build();
+
+        Product product = Product.builder()
+                .productId(productId)
+                .stockQuantity(5)
+                .build();
+
+        OrderRequestDto request = OrderRequestDto.builder()
+                .status(OrderStatus.PROCESSED)
+                .build();
+
+        when(orderStore.getOrder(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderStore.getOrderItemsByOrderId(orderId)).thenReturn(List.of(item));
+        when(productStore.getProduct(productId)).thenReturn(Optional.of(product));
+
+        Assertions.assertThrows(
+                InsufficientProductStock.class,
+                () -> orderService.updateOrderStatus(orderId, request)
+        );
+
+        verify(productStore, never()).updateProductStocks(anyList(), anyList());
+        verify(orderStore, never()).updateOrder(any());
     }
 }
