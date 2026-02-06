@@ -6,7 +6,9 @@ import com.example.ecommerce_system.dto.product.CreateProductRequest;
 import com.example.ecommerce_system.dto.product.ProductRequestDto;
 import com.example.ecommerce_system.dto.product.ProductResponseDto;
 import com.example.ecommerce_system.dto.product.UpdateProductRequest;
+import com.example.ecommerce_system.dto.review.ReviewResponseDto;
 import com.example.ecommerce_system.service.ProductService;
+import com.example.ecommerce_system.service.ReviewService;
 import com.example.ecommerce_system.util.SuccessResponseHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,6 +28,7 @@ import java.util.UUID;
 @RequestMapping("/products")
 public class ProductController {
     private final ProductService productService;
+    private final ReviewService reviewService;
 
     @Operation(summary = "Retrieve all products")
     @ApiResponses({
@@ -48,6 +51,21 @@ public class ProductController {
     @GetMapping("/{id}")
     public SuccessResponseDto<ProductResponseDto> getProductId(@PathVariable UUID id) {
         var product = productService.getProduct(id);
+        return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, product);
+    }
+
+    @Operation(summary = "Retrieve a single product's list of reviews")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "A list of reviews"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    @GetMapping("/{id}/reviews")
+    public SuccessResponseDto<List<ReviewResponseDto>> getProductWithReviews(
+            @PathVariable UUID id,
+            @RequestParam int limit,
+            @RequestParam int offset
+    ) {
+        var product = reviewService.getReviewsByProduct(id, limit, offset);
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, product);
     }
 
