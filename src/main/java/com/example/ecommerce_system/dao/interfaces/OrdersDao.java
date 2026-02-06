@@ -60,4 +60,13 @@ public interface OrdersDao {
      * @throws DaoException on DAO errors
      */
     void update(Connection connection, Orders order) throws DaoException;
+
+    /**
+     * Checks if a product has been bought by a customer
+     * @param connection the {@link java.sql.Connection} to use
+     * @param customerId the customer who made the purchase
+     * @param productId the product that has been ordered
+     * @throws DaoException on Dao errors
+     */
+    boolean hasProcessedOrderWithProduct(Connection connection, UUID customerId, UUID productId) throws DaoException;
 }

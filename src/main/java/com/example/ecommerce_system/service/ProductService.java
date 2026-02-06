@@ -3,6 +3,8 @@ package com.example.ecommerce_system.service;
 import com.example.ecommerce_system.dto.product.ProductFilter;
 import com.example.ecommerce_system.dto.product.ProductRequestDto;
 import com.example.ecommerce_system.dto.product.ProductResponseDto;
+import com.example.ecommerce_system.dto.product.ProductWithReviewsDto;
+import com.example.ecommerce_system.dto.review.ReviewResponseDto;
 import com.example.ecommerce_system.exception.category.CategoryNotFoundException;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
 import com.example.ecommerce_system.model.Product;
@@ -21,6 +23,8 @@ public class ProductService {
 
     private final ProductStore productStore;
     private final CategoryStore categoryStore;
+    private final ReviewService reviewService;
+    private final CategoryService categoryService;
 
     /**
      * Create a new product and persist it via {@link com.example.ecommerce_system.store.ProductStore#createProduct(com.example.ecommerce_system.model.Product)}.
@@ -150,5 +154,33 @@ public class ProductService {
 
         this.productStore.updateProduct(updated);
         return map(updated);
+    }
+
+    /**
+     * Get all products with their categories and reviews
+     */
+    public List<ProductWithReviewsDto> getAllProductsWithReviews(int limit, int offset, int reviewLimit) {
+        List<Product> products = this.productStore.getAllProducts(limit, offset);
+        return products.stream().map(product -> {
+            List<ReviewResponseDto> reviews = reviewService.getReviewsByProduct(
+                    product.getProductId(),
+                    reviewLimit,
+                    0
+            );
+            return mapToProductWithReviews(product, reviews);
+        }).toList();
+    }
+
+    private ProductWithReviewsDto mapToProductWithReviews(Product product, List<ReviewResponseDto> reviews) {
+        return ProductWithReviewsDto.builder()
+                .productId(product.getProductId())
+                .category(categoryService.getCategory(product.getCategoryId()))
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stock(product.getStockQuantity())
+                .updatedAt(product.getUpdatedAt())
+                .reviews(reviews)
+                .build();
     }
 }
