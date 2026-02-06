@@ -83,12 +83,32 @@ input ReviewRequestDto {
     comment: JSON!
 }
 
+type CategoryResponseDto {
+    categoryId: ID!
+    name: String!
+    description: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ProductWithReviewsDto {
+    productId: ID!
+    category: CategoryResponseDto!
+    name: String!
+    description: String
+    price: Float!
+    stock: Int!
+    updatedAt: String!
+    reviews: [ReviewResponseDto!]!
+}
+
 scalar JSON
 
 type Query {
     getCustomerCartItems(customerId: ID!): [CartItemResponseDto!]
     getCustomerOrders(customerId: ID!, limit: Int = 10, offset: Int = 0): [OrderResponseDto!]!
     getProductReviews(productId: ID!, limit: Int = 10, offset: Int = 0): [ReviewResponseDto!]!
+    getAllProductsWithReviews(limit: Int! = 10, offset: Int! = 0, reviewLimit: Int!): [ProductWithReviewsDto!]!
 }
 
 type Mutation {
