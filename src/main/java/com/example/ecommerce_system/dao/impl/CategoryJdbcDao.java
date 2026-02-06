@@ -8,7 +8,6 @@ import com.example.ecommerce_system.dao.interfaces.StatementPreparer;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

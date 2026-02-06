@@ -27,7 +27,8 @@ public class OrderService {
     private ProductStore productStore;
 
     /**
-     * Places a new order for the specified customer and returns the order response.
+     * Places a new order for the specified customer.
+     * Validates order items, checks product availability and stock, calculates total amount, and creates the order with PENDING status.
      */
     public OrderResponseDto placeOrder(OrderRequestDto request, UUID userId) {
         var customer = customerStore.getCustomerByUserId(userId).orElseThrow(
@@ -118,6 +119,7 @@ public class OrderService {
 
     /**
      * Retrieves all orders with pagination.
+     * Each order includes its associated items.
      */
     public List<OrderResponseDto> getAllOrders(int limit, int offset) {
         List<Orders> orders = orderStore.getAllOrders(limit, offset);
@@ -131,6 +133,7 @@ public class OrderService {
 
     /**
      * Retrieves all orders for a customer with pagination.
+     * Validates customer existence before fetching orders.
      */
     public List<OrderResponseDto> getCustomerOrders(UUID customerId, int limit, int offset) {
         customerStore.getCustomer(customerId).orElseThrow(
@@ -146,7 +149,9 @@ public class OrderService {
     }
 
     /**
-     * Updates the status of an order and returns the updated order response.
+     * Updates the status of an order.
+     * For PROCESSED status: validates stock availability and deducts product quantities.
+     * For CANCELLED status: only allows cancellation if order is PENDING.
      */
     public OrderResponseDto updateOrderStatus(UUID orderId, OrderRequestDto request) {
         Orders existingOrder = orderStore.getOrder(orderId).orElseThrow(

@@ -29,8 +29,8 @@ public class CartService {
     private final ProductService productService;
 
     /**
-     * Add a product to a customer's cart. If the customer does not have a cart yet, one is created.
-     * Validates that both customer and product exist before adding the item.
+     * Add a product to a customer's cart.
+     * Creates a cart if the customer doesn't have one yet. Validates customer and product existence.
      */
     public CartItemResponseDto addToCart(UUID customerId, CartItemRequestDto request) {
         checkThatCustomerExists(customerId);
@@ -86,7 +86,7 @@ public class CartService {
 
     /**
      * Remove a cart item from the customer's cart.
-     * Checks that the cart item exists and belongs to the customer.
+     * Validates that the cart item exists and belongs to the customer before removal.
      */
     public void removeFromCart(UUID customerId, UUID cartItemId) {
         checkThatCustomerExists(customerId);
@@ -107,9 +107,7 @@ public class CartService {
 
     /**
      * Update the quantity of a cart item in the customer's cart.
-     * Checks that the cart item exists and belongs to the customer.
-     *
-     * @return the updated cart item with full product details
+     * Validates that the cart item exists and belongs to the customer. Returns the updated cart item with full product details.
      */
     public CartItemResponseDto updateCartItem(UUID customerId, UUID cartItemId, CartItemRequestDto request) {
         checkThatCustomerExists(customerId);
@@ -138,9 +136,8 @@ public class CartService {
     }
 
     /**
-     * Get all cart items for a customer.</p>
-     * Delegates to {@link com.example.ecommerce_system.store.CartStore#getCartByCustomerId(java.util.UUID)}
-     * and {@link com.example.ecommerce_system.store.CartStore#getCartItems(java.util.UUID)}.
+     * Get all cart items for a customer.
+     * Returns an empty list if the customer has no cart. Each cart item includes full product details.
      */
     public List<CartItemResponseDto> getCartItemsByCustomer(UUID customerId) {
         checkThatCustomerExists(customerId);

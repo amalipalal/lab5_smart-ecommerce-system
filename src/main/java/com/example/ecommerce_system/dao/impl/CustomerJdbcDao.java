@@ -38,7 +38,7 @@ public class CustomerJdbcDao implements CustomerDao {
             SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
             FROM customer c
             JOIN users u ON c.user_id = u.user_id
-            WHERE c.customer_id IN 
+            WHERE c.customer_id IN
             """;
 
     private static final String FIND_BY_EMAIL = """
@@ -64,8 +64,8 @@ public class CustomerJdbcDao implements CustomerDao {
             SELECT c.customer_id, c.first_name, c.last_name, u.email, c.phone, u.created_at, c.is_active
             FROM customer c
             JOIN users u ON c.user_id = u.user_id
-            WHERE LOWER(c.first_name) LIKE LOWER(?) 
-               OR LOWER(c.last_name) LIKE LOWER(?) 
+            WHERE LOWER(c.first_name) LIKE LOWER(?)
+               OR LOWER(c.last_name) LIKE LOWER(?)
                OR LOWER(u.email) LIKE LOWER(?)
             LIMIT ? OFFSET ?
             """;
@@ -126,41 +126,6 @@ public class CustomerJdbcDao implements CustomerDao {
             }
         } catch (SQLException e) {
             throw new DaoException("Failed to fetch customer with userId: " + userId, e);
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public List<Customer> findByIds(Connection conn, Set<UUID> customerIds) {
-        String placeholders = String.join(", ", Collections.nCopies(customerIds.size(), "? "));
-        String sql = FIND_BY_MULTIPLE_IDS + "(" + placeholders + ")";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            int index = 1;
-            for (UUID id : customerIds)
-                ps.setObject(index++, id);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                List<Customer> customers = new ArrayList<>();
-                while (rs.next())
-                    customers.add(map(rs));
-
-                return customers;
-            }
-
-        } catch (SQLException e) {
-            throw new DaoException("Failed to find customers by IDs", e);
-        }
-    }
-
-    @Override
-    public Optional<Customer> findByEmail(Connection conn, String email) throws DaoException {
-        try (PreparedStatement ps = conn.prepareStatement(FIND_BY_EMAIL)) {
-            ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return Optional.of(map(rs));
-            }
-        } catch (SQLException e) {
-            throw new DaoException("Failed to find customer with email: " + email, e);
         }
         return Optional.empty();
     }

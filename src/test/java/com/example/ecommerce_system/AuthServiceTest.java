@@ -11,7 +11,6 @@ import com.example.ecommerce_system.model.Customer;
 import com.example.ecommerce_system.model.Role;
 import com.example.ecommerce_system.model.User;
 import com.example.ecommerce_system.service.AuthService;
-import com.example.ecommerce_system.store.CustomerStore;
 import com.example.ecommerce_system.store.UserStore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +25,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,9 +32,6 @@ class AuthServiceTest {
 
     @Mock
     private UserStore userStore;
-
-    @Mock
-    private CustomerStore customerStore;
 
     @Mock
     private BCryptPasswordEncoder passwordEncoder;

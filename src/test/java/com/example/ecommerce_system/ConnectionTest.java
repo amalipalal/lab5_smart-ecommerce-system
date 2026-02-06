@@ -23,7 +23,7 @@ class ConnectionTest {
     @Test
     void testDataSourceIsHikariCP() {
         assertNotNull(dataSource, "DataSource should be auto-configured");
-        assertTrue(dataSource instanceof HikariDataSource, "DataSource should be HikariCP");
+        assertInstanceOf(HikariDataSource.class, dataSource, "DataSource should be HikariCP");
 
         HikariDataSource hikariDataSource = (HikariDataSource) dataSource;
         System.out.println("✓ HikariCP DataSource configured successfully");

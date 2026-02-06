@@ -29,8 +29,7 @@ public class ReviewService {
 
     /**
      * Create a new review for a product.
-     * Validates that: The product exists, The customer exists, The customer has ordered the product,
-     * and The order containing the product has been processed.
+     * Validates that the product exists, the customer exists, and the customer has ordered and received (PROCESSED status) the product.
      */
     public ReviewResponseDto createReview(UUID productId, UUID customerId, ReviewRequestDto request) {
         productStore.getProduct(productId)
@@ -94,6 +93,7 @@ public class ReviewService {
 
     /**
      * Retrieve paginated reviews for a specific product.
+     * Validates product existence before fetching reviews. Each review includes customer details.
      */
     public List<ReviewResponseDto> getReviewsByProduct(UUID productId, int limit, int offset) {
         productStore.getProduct(productId)

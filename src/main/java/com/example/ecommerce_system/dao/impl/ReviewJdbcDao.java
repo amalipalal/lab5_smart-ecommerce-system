@@ -1,7 +1,6 @@
 package com.example.ecommerce_system.dao.impl;
 
 import com.example.ecommerce_system.dao.interfaces.ReviewDao;
-import com.example.ecommerce_system.dao.interfaces.StatementPreparer;
 import com.example.ecommerce_system.exception.DaoException;
 import com.example.ecommerce_system.model.Review;
 import lombok.NoArgsConstructor;
@@ -74,15 +73,6 @@ public class ReviewJdbcDao implements ReviewDao {
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DaoException("Failed to save review", e);
-        }
-    }
-
-    private void insertionQuery(Connection conn, String sql, StatementPreparer preparer)
-            throws SQLException {
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            preparer.prepare(ps);
-            ps.executeUpdate();
         }
     }
 }

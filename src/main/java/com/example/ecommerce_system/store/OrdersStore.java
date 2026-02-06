@@ -4,7 +4,6 @@ import com.example.ecommerce_system.dao.interfaces.OrderItemDao;
 import com.example.ecommerce_system.dao.interfaces.OrdersDao;
 import com.example.ecommerce_system.exception.DaoException;
 import com.example.ecommerce_system.exception.DatabaseConnectionException;
-import com.example.ecommerce_system.exception.order.DeleteOrderException;
 import com.example.ecommerce_system.exception.order.OrderCreationException;
 import com.example.ecommerce_system.exception.order.OrderRetrievalException;
 import com.example.ecommerce_system.exception.order.OrderUpdateException;
@@ -34,11 +33,6 @@ public class OrdersStore {
      * Persist a new {@link com.example.ecommerce_system.model.Orders} inside a transaction.</p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#save(java.sql.Connection, com.example.ecommerce_system.model.Orders)}.
      * On success this method evicts relevant entries in the "orders" cache via Spring Cache.
-     *
-     * @param order the order to create
-     * @return the persisted {@link com.example.ecommerce_system.model.Orders}
-     * @throws com.example.ecommerce_system.exception.order.OrderCreationException when DAO save fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = {"orders", "order_items"}, allEntries = true)
     public Orders createOrder(Orders order, List<OrderItem> items) {
@@ -62,11 +56,6 @@ public class OrdersStore {
      * Update an existing {@link com.example.ecommerce_system.model.Orders} inside a transaction.</p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#update(java.sql.Connection, com.example.ecommerce_system.model.Orders)}.
      * On success this method evicts relevant entries in the "orders" cache via Spring Cache.
-     *
-     * @param order order with updated fields
-     * @return the updated {@link com.example.ecommerce_system.model.Orders}
-     * @throws com.example.ecommerce_system.exception.order.OrderUpdateException when DAO update fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @CacheEvict(value = "orders", allEntries = true)
     public Orders updateOrder(Orders order) {
@@ -89,11 +78,6 @@ public class OrdersStore {
      * Retrieve an order by id</p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#findById(java.sql.Connection, java.util.UUID)}.
      * The returned value is cached in the "orders" cache using Spring's cache abstraction.
-     *
-     * @param orderId order identifier
-     * @return an {@link Optional} containing the {@link com.example.ecommerce_system.model.Orders} when found
-     * @throws com.example.ecommerce_system.exception.order.OrderRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "orders", key = "'order:' + #orderId")
     public Optional<Orders> getOrder(UUID orderId) {
@@ -107,15 +91,9 @@ public class OrdersStore {
     }
 
     /**
-     * Retrieve all orders with pagination.</p>
+     * Retrieve all orders with pagination.<p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#getAllOrders(java.sql.Connection, int, int)}.
      * Results are cached in the "orders" cache using Spring Cache.
-     *
-     * @param limit maximum number of results
-     * @param offset zero-based offset
-     * @return list of {@link com.example.ecommerce_system.model.Orders}
-     * @throws com.example.ecommerce_system.exception.order.OrderRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "orders", key = "'all:' + #limit + ':' + #offset")
     public List<Orders> getAllOrders(int limit, int offset) {
@@ -132,11 +110,6 @@ public class OrdersStore {
      * Retrieve all order items for a specific order.<p>
      * Uses {@link com.example.ecommerce_system.dao.interfaces.OrderItemDao#findByOrderId(java.sql.Connection, java.util.UUID)}.
      * The returned value is cached in the "order_items" cache using Spring's cache abstraction.
-     *
-     * @param orderId order identifier
-     * @return list of {@link com.example.ecommerce_system.model.OrderItem}
-     * @throws com.example.ecommerce_system.exception.orderitem.OrderItemRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "order_items", key = "'order:' + #orderId")
     public List<OrderItem> getOrderItemsByOrderId(UUID orderId) {
@@ -153,13 +126,6 @@ public class OrdersStore {
      * Retrieve orders for a specific customer with pagination.<p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#getCustomerOrders(java.sql.Connection, java.util.UUID, int, int)}.
      * Results are cached in the "orders" cache using Spring Cache.
-     *
-     * @param customerId customer identifier
-     * @param limit maximum number of results
-     * @param offset zero-based offset
-     * @return list of {@link com.example.ecommerce_system.model.Orders}
-     * @throws com.example.ecommerce_system.exception.order.OrderRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "orders", key = "'customer:' + #customerId + ':' + #limit + ':' + #offset")
     public List<Orders> getCustomerOrders(UUID customerId, int limit, int offset) {
@@ -175,12 +141,6 @@ public class OrdersStore {
     /**
      * Check if a customer has a processed order containing a specific product.<p>
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#hasProcessedOrderWithProduct(java.sql.Connection, java.util.UUID, java.util.UUID)}.
-     *
-     * @param customerId customer identifier
-     * @param productId product identifier
-     * @return true if the customer has a processed order with the product, false otherwise
-     * @throws com.example.ecommerce_system.exception.order.OrderRetrievalException when DAO retrieval fails
-     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
      */
     @Cacheable(value = "orders", key="'order:processed:' + #customerId + ':' + #productId")
     public boolean hasProcessedOrderWithProduct(UUID customerId, UUID productId) {
