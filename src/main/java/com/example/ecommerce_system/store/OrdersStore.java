@@ -171,4 +171,24 @@ public class OrdersStore {
             throw new DatabaseConnectionException(e);
         }
     }
+
+    /**
+     * Check if a customer has a processed order containing a specific product.<p>
+     * Delegates to {@link com.example.ecommerce_system.dao.interfaces.OrdersDao#hasProcessedOrderWithProduct(java.sql.Connection, java.util.UUID, java.util.UUID)}.
+     *
+     * @param customerId customer identifier
+     * @param productId product identifier
+     * @return true if the customer has a processed order with the product, false otherwise
+     * @throws com.example.ecommerce_system.exception.order.OrderRetrievalException when DAO retrieval fails
+     * @throws com.example.ecommerce_system.exception.DatabaseConnectionException when a DB connection cannot be obtained
+     */
+    public boolean hasProcessedOrderWithProduct(UUID customerId, UUID productId) {
+        try (Connection conn = dataSource.getConnection()) {
+            return this.ordersDao.hasProcessedOrderWithProduct(conn, customerId, productId);
+        } catch (DaoException e) {
+            throw new OrderRetrievalException("processed order check for customer " + customerId);
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
+    }
 }

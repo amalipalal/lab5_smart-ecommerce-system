@@ -155,4 +155,29 @@ public class OrdersJdbcDao implements OrdersDao {
             throw new DaoException("Failed to update order " + order.getOrderId(), e);
         }
     }
+
+    @Override
+    public boolean hasProcessedOrderWithProduct(Connection conn, UUID customerId, UUID productId) {
+        String sql = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM orders o
+                INNER JOIN order_item oi ON o.order_id = oi.order_id
+                INNER JOIN order_statuses os ON o.status_id = os.status_id
+                WHERE o.customer_id = ?
+                  AND oi.product_id = ?
+                  AND os.status_name = 'PROCESSED'
+            )""";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setObject(1, customerId);
+            ps.setObject(2, productId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getBoolean(1);
+            }
+        } catch (SQLException e) {
+            throw new DaoException("Failed to check processed order for customer " + customerId, e);
+        }
+    }
 }
