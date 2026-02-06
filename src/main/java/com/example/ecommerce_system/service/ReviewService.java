@@ -39,7 +39,7 @@ public class ReviewService {
         customerStore.getCustomer(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException(customerId.toString()));
 
-        validateCustomerHasOrderedAndProcessedProduct(customerId, productId);
+        validateCustomerHasProcessedProduct(customerId, productId);
 
         Review review = Review.builder()
                 .reviewId(UUID.randomUUID())
@@ -55,6 +55,43 @@ public class ReviewService {
         return mapToDto(savedReview);
     }
 
+    private void validateCustomerHasProcessedProduct(UUID customerId, UUID productId) {
+        boolean hasProcessedOrder = ordersStore.hasProcessedOrderWithProduct(customerId, productId);
+
+        if (!hasProcessedOrder) {
+            throw new CustomerHasNotOrderedProductException(
+                    customerId.toString(),
+                    productId.toString()
+            );
+        }
+    }
+
+    private ReviewResponseDto mapToDto(Review review) {
+        Customer customer = customerStore.getCustomer(review.getCustomerId())
+                .orElseThrow(() -> new CustomerNotFoundException(review.getCustomerId().toString()));
+
+        var customerDto = mapToCustomerDto(customer);
+
+        return ReviewResponseDto.builder()
+                .reviewId(review.getReviewId())
+                .productId(review.getProductId())
+                .customer(customerDto)
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .createdAt(review.getCreatedAt())
+                .build();
+    }
+
+    private CustomerResponseDto mapToCustomerDto(Customer customer) {
+        return CustomerResponseDto.builder()
+                .customerId(customer.getCustomerId())
+                .firstName(customer.getFirstName())
+                .lastName(customer.getLastName())
+                .email(customer.getEmail())
+                .createdAt(customer.getCreatedAt())
+                .build();
+    }
+
     /**
      * Retrieve paginated reviews for a specific product.
      */
@@ -67,44 +104,5 @@ public class ReviewService {
         return reviews.stream()
                 .map(this::mapToDto)
                 .toList();
-    }
-
-    private void validateCustomerHasOrderedAndProcessedProduct(UUID customerId, UUID productId) {
-        boolean hasProcessedOrder = ordersStore.hasProcessedOrderWithProduct(customerId, productId);
-
-        if (!hasProcessedOrder) {
-            throw new CustomerHasNotOrderedProductException(
-                customerId.toString(),
-                productId.toString()
-            );
-        }
-    }
-
-    /**
-     * Map a Review entity to a ReviewResponseDto.
-     *
-     * @param review the review entity
-     * @return the review response DTO
-     */
-    private ReviewResponseDto mapToDto(Review review) {
-        Customer customer = customerStore.getCustomer(review.getCustomerId())
-                .orElseThrow(() -> new CustomerNotFoundException(review.getCustomerId().toString()));
-
-        CustomerResponseDto customerDto = CustomerResponseDto.builder()
-                .customerId(customer.getCustomerId())
-                .firstName(customer.getFirstName())
-                .lastName(customer.getLastName())
-                .email(customer.getEmail())
-                .createdAt(customer.getCreatedAt())
-                .build();
-
-        return ReviewResponseDto.builder()
-                .reviewId(review.getReviewId())
-                .productId(review.getProductId())
-                .customer(customerDto)
-                .rating(review.getRating())
-                .comment(review.getComment())
-                .createdAt(review.getCreatedAt())
-                .build();
     }
 }
