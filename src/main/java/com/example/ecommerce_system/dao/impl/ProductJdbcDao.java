@@ -32,10 +32,6 @@ public class ProductJdbcDao implements ProductDao {
             LIMIT ? OFFSET ?
             """;
 
-    private static final String COUNT_ALL = """
-            SELECT COUNT(*) FROM product
-            """;
-
     private static final String FILTER = """
             SELECT p.product_id, p.name, p.description, p.price,
                    p.stock_quantity, p.category_id, p.created_at, p.updated_at
