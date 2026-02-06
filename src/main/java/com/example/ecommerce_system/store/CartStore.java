@@ -34,11 +34,6 @@ public class CartStore {
     /**
      * Create/Persist a new Cart inside a transaction.
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CartDao#save(java.sql.Connection, com.example.ecommerce_system.model.Cart)}.
-     *
-     * @param cart the cart to create
-     * @return the persisted cart
-     * @throws DatabaseConnectionException when a DB connection cannot be obtained
-     * @throws CartCreationException when DAO save fails
      */
     @Caching(evict = {
             @CacheEvict(value = "carts", key = "'customer:' + #cart.customerId"),
@@ -63,10 +58,6 @@ public class CartStore {
     /**
      * Add a new item to a cart inside a transaction.
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CartDao#addItem(java.sql.Connection, com.example.ecommerce_system.model.CartItem)}.
-     *
-     * @param item the cart item to add
-     * @throws DatabaseConnectionException when a DB connection cannot be obtained
-     * @throws CartItemAddException when DAO add fails
      */
     @CacheEvict(value = "carts", key = "'cart:' + #item.cartId")
     public void addCartItem(CartItem item) {
@@ -88,10 +79,6 @@ public class CartStore {
      * Remove a cart item by its id inside a transaction.
      * evict entire cache after this is done successfully
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CartDao#deleteItemById(java.sql.Connection, java.util.UUID)}.
-     *
-     * @param cartItemId identifier of the cart item to remove
-     * @throws DatabaseConnectionException when a DB connection cannot be obtained
-     * @throws CartItemRemoveException when DAO delete fails
      */
     @Cacheable(value = "carts", key = "'item:' + #cartItemId")
     public void removeCartItem(UUID cartItemId) {
@@ -103,7 +90,6 @@ public class CartStore {
                 this.cartDao.deleteItemById(conn, cartItemId);
                 conn.commit();
 
-                // Evict only the specific cart's cache entry
                 cartItem.ifPresent(item ->
                     evictCartCache(item.getCartId())
                 );
@@ -116,14 +102,17 @@ public class CartStore {
         }
     }
 
+    private void evictCartCache(UUID cartId) {
+        var cache = cacheManager.getCache("carts");
+        if (cache != null) {
+            cache.evict("cart:" + cartId);
+            cache.evict("items:" + cartId);
+        }
+    }
+
     /**
      * Update quantity of a cart item inside a transaction.
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CartDao#updateItemQuantity(java.sql.Connection, java.util.UUID, int)}.
-     *
-     * @param cartItemId cart item identifier
-     * @param newQuantity new quantity to set
-     * @throws DatabaseConnectionException when a DB connection cannot be obtained
-     * @throws CartUpdateException when DAO update fails
      */
     @CacheEvict(value = "carts", key = "'item' + #cartItemId")
     public void updateCartItem(UUID cartItemId, int newQuantity) {
@@ -135,7 +124,6 @@ public class CartStore {
                 this.cartDao.updateItemQuantity(conn, cartItemId, newQuantity);
                 conn.commit();
 
-                // Evict only the specific cart's cache entry
                 cartItem.ifPresent(item ->
                     evictCartCache(item.getCartId())
                 );
@@ -151,11 +139,6 @@ public class CartStore {
     /**
      * Get all items in a cart.
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CartDao#findItemsByCartId(java.sql.Connection, java.util.UUID)}.
-     *
-     * @param cartId cart identifier
-     * @return list of cart items
-     * @throws DatabaseConnectionException when a DB connection cannot be obtained
-     * @throws CartRetrievalException when DAO retrieval fails
      */
     @Cacheable(value = "carts", key = "'items:' + #cartId")
     public List<CartItem> getCartItems(UUID cartId) {
@@ -171,11 +154,6 @@ public class CartStore {
     /**
      * Retrieve a cart by customer id.
      * Delegates to {@link com.example.ecommerce_system.dao.interfaces.CartDao#findByCustomerId(java.sql.Connection, java.util.UUID)}.
-     *
-     * @param customerId customer identifier
-     * @return optional cart
-     * @throws DatabaseConnectionException when a DB connection cannot be obtained
-     * @throws CartRetrievalException when DAO retrieval fails
      */
     @Cacheable(value = "carts", key = "'customer:' + #customerId")
     public Optional<Cart> getCartByCustomerId(UUID customerId) {
@@ -200,14 +178,6 @@ public class CartStore {
             throw new CartRetrievalException(String.valueOf(cartItemId));
         } catch (SQLException e) {
             throw new DatabaseConnectionException(e);
-        }
-    }
-
-    private void evictCartCache(UUID cartId) {
-        var cache = cacheManager.getCache("carts");
-        if (cache != null) {
-            cache.evict("cart:" + cartId);
-            cache.evict("items:" + cartId);
         }
     }
 }
