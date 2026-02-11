@@ -20,7 +20,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
                         "/api/v1/auth/**",
                         "**/docs",
                         "/api/swagger-ui/**",
-                        "**/v3/api-docs/**"
+                        "/api/v1/v3/api-docs/**"
                 );
 
         registry.addInterceptor(adminInterceptor)
@@ -29,7 +29,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
                         "/api/v1/auth/**",
                         "**/docs",
                         "/api/swagger-ui/**",
-                        "**/v3/api-docs/**"
+                        "/api/v1/v3/api-docs/**"
                 );
     }
 }
