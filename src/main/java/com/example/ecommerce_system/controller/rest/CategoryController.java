@@ -68,6 +68,10 @@ public class CategoryController {
     }
 
     @RequireAdmin
+    @Operation(summary = "Create a category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "successfully added category")
+    })
     @PostMapping
     public SuccessResponseDto<CategoryResponseDto> addCategory(
             @RequestBody @Validated(CreateCategoryRequest.class) CategoryRequestDto category
@@ -77,6 +81,10 @@ public class CategoryController {
     }
 
     @RequireAdmin
+    @Operation(summary = "Update a category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "successfully updated a category")
+    })
     @PatchMapping("/{id}")
     public SuccessResponseDto<CategoryResponseDto> updateCategory(
             @PathVariable UUID id,
