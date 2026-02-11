@@ -1,12 +1,7 @@
 package com.example.ecommerce_system.util.handler;
 
 import com.example.ecommerce_system.dto.ErrorResponseDto;
-import com.example.ecommerce_system.exception.order.DeleteOrderException;
-import com.example.ecommerce_system.exception.order.OrderCreationException;
-import com.example.ecommerce_system.exception.order.OrderDoesNotExist;
-import com.example.ecommerce_system.exception.order.OrderRetrievalException;
-import com.example.ecommerce_system.exception.order.OrderUpdateException;
-import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
+import com.example.ecommerce_system.exception.order.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +14,14 @@ public class OrderResponseHandler {
     public ResponseEntity<ErrorResponseDto<String>> handleOrderNotFound(OrderDoesNotExist exception) {
         return ErrorResponseHandler.generateErrorMessage(
                 HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                exception.getClass().getSimpleName());
+    }
+
+    @ExceptionHandler(OrderCannotBeCancelledException.class)
+    public ResponseEntity<ErrorResponseDto<String>> handleOrderCannotBeCancelled(OrderCannotBeCancelledException exception) {
+        return ErrorResponseHandler.generateErrorMessage(
+                HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 exception.getClass().getSimpleName());
     }
