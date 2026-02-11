@@ -5,6 +5,7 @@ import com.example.ecommerce_system.dto.orders.OrderRequestDto;
 import com.example.ecommerce_system.dto.orders.OrderResponseDto;
 import com.example.ecommerce_system.exception.customer.CustomerNotFoundException;
 import com.example.ecommerce_system.exception.order.InvalidOrderStatusException;
+import com.example.ecommerce_system.exception.order.OrderCannotBeCancelledException;
 import com.example.ecommerce_system.exception.order.OrderDoesNotExist;
 import com.example.ecommerce_system.exception.product.InsufficientProductStock;
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
@@ -206,7 +207,7 @@ public class OrderService {
 
     private Orders cancelOrder(Orders existingOrder) {
         if (existingOrder.getStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("Only pending orders can be cancelled");
+            throw new OrderCannotBeCancelledException(existingOrder.getOrderId().toString());
         }
 
         Orders cancelledOrder = buildOrderWithNewStatus(existingOrder, OrderStatus.CANCELLED);
