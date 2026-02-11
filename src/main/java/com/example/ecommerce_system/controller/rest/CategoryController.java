@@ -1,5 +1,6 @@
 package com.example.ecommerce_system.controller.rest;
 
+import com.example.ecommerce_system.config.RequireAdmin;
 import com.example.ecommerce_system.dto.*;
 import com.example.ecommerce_system.dto.category.CategoryRequestDto;
 import com.example.ecommerce_system.dto.category.CategoryResponseDto;
@@ -51,6 +52,7 @@ public class CategoryController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, category);
     }
 
+    @RequireAdmin
     @Operation(summary = "Retrieve categories with name containing query")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Find all categories with names containing the query")
@@ -65,6 +67,11 @@ public class CategoryController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, categories);
     }
 
+    @RequireAdmin
+    @Operation(summary = "Create a category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "successfully added category")
+    })
     @PostMapping
     public SuccessResponseDto<CategoryResponseDto> addCategory(
             @RequestBody @Validated(CreateCategoryRequest.class) CategoryRequestDto category
@@ -73,6 +80,11 @@ public class CategoryController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.CREATED, categoryCreated);
     }
 
+    @RequireAdmin
+    @Operation(summary = "Update a category")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "successfully updated a category")
+    })
     @PatchMapping("/{id}")
     public SuccessResponseDto<CategoryResponseDto> updateCategory(
             @PathVariable UUID id,
@@ -82,6 +94,7 @@ public class CategoryController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, updatedCategory);
     }
 
+    @RequireAdmin
     @Operation(summary = "Delete a category by id")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Category deleted"),

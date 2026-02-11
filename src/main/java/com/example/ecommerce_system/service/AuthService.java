@@ -1,5 +1,7 @@
 package com.example.ecommerce_system.service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.example.ecommerce_system.dto.auth.AuthResponseDto;
 import com.example.ecommerce_system.dto.auth.LoginRequestDto;
 import com.example.ecommerce_system.dto.auth.SignupRequestDto;
@@ -11,20 +13,25 @@ import com.example.ecommerce_system.model.Customer;
 import com.example.ecommerce_system.model.Role;
 import com.example.ecommerce_system.model.User;
 import com.example.ecommerce_system.store.UserStore;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class AuthService {
 
     private final UserStore userStore;
     private final BCryptPasswordEncoder passwordEncoder;
+
+    @Value("${jwt.token.secret-key}")
+    private String secretKey;
 
     /**
      * Register a new user with the provided credentials.
@@ -42,7 +49,18 @@ public class AuthService {
         var newCustomer = createCustomer(request);
 
         var createdUser = userStore.createUser(newUser, newCustomer);
-        return mapToAuthResponse(createdUser);
+
+        return mapToAuthResponse(createdUser, null);
+    }
+
+    private String generateJwtToken(User user) {
+        Algorithm algorithm = Algorithm.HMAC256(secretKey);
+        return JWT.create()
+                .withSubject(user.getUserId().toString())
+                .withClaim("role", user.getRole().name())
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + 86400000))
+                .sign(algorithm);
     }
 
     private User createUser(SignupRequestDto request) {
@@ -79,7 +97,8 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        return mapToAuthResponse(user);
+        String token = generateJwtToken(user);
+        return mapToAuthResponse(user, token);
     }
 
     private void validatePassword(String password) {
@@ -104,12 +123,13 @@ public class AuthService {
         }
     }
 
-    private AuthResponseDto mapToAuthResponse(User user) {
+    private AuthResponseDto mapToAuthResponse(User user, String token) {
         return AuthResponseDto.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
+                .token(token)
                 .build();
     }
 }
