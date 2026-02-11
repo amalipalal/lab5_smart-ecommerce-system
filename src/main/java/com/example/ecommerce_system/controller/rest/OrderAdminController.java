@@ -23,10 +23,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Validated
 @RequestMapping("/admin/orders")
+@RequireAdmin
 public class OrderAdminController {
     private final OrderService orderService;
 
-    @RequireAdmin
     @Operation(summary = "Retrieve all orders")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "All orders retrieved")
@@ -40,7 +40,6 @@ public class OrderAdminController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, orders);
     }
 
-    @RequireAdmin
     @Operation(summary = "Retrieve a single order by orderId")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "A single order retrieved"),
@@ -52,7 +51,6 @@ public class OrderAdminController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, order);
     }
 
-    @RequireAdmin
     @Operation(summary = "Update order status by id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order status updated"),

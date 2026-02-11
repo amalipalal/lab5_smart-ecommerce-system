@@ -23,10 +23,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Validated
 @RequestMapping("/customers")
+@RequireAdmin
 public class CustomerController {
     private final CustomerService customerService;
 
-    @RequireAdmin
     @Operation(summary = "Retrieve all customers")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "All customers retrieved")
@@ -40,7 +40,6 @@ public class CustomerController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, customers);
     }
 
-    @RequireAdmin
     @Operation(summary = "Retrieve a single customer by customerId")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "A single customer retrieved"),
@@ -52,7 +51,6 @@ public class CustomerController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, customer);
     }
 
-    @RequireAdmin
     @Operation(summary = "Search customers by query matching first name, last name, or email")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Customers matching search criteria retrieved")
@@ -67,7 +65,6 @@ public class CustomerController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, customers);
     }
 
-    @RequireAdmin
     @Operation(summary = "Update a customer's phone and/or active status")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Customer updated"),
