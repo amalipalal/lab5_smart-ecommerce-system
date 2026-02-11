@@ -8,6 +8,7 @@ import com.example.ecommerce_system.exception.customer.CustomerNotFoundException
 import com.example.ecommerce_system.exception.product.ProductNotFoundException;
 import com.example.ecommerce_system.model.Cart;
 import com.example.ecommerce_system.model.CartItem;
+import com.example.ecommerce_system.model.Customer;
 import com.example.ecommerce_system.store.CartStore;
 import com.example.ecommerce_system.store.CustomerStore;
 import com.example.ecommerce_system.store.ProductStore;
@@ -32,12 +33,12 @@ public class CartService {
      * Add a product to a customer's cart.
      * Creates a cart if the customer doesn't have one yet. Validates customer and product existence.
      */
-    public CartItemResponseDto addToCart(UUID customerId, CartItemRequestDto request) {
-        checkThatCustomerExists(customerId);
+    public CartItemResponseDto addToCart(UUID userId, CartItemRequestDto request) {
+        var customer = checkThatCustomerExists(userId);
 
         checkThatProductExists(request.getProductId());
 
-        Cart cart = getOrCreateCartForCustomer(customerId);
+        Cart cart = getOrCreateCartForCustomer(customer.getCustomerId());
 
         CartItem cartItem = CartItem.builder()
                 .cartItemId(UUID.randomUUID())
@@ -88,8 +89,9 @@ public class CartService {
      * Remove a cart item from the customer's cart.
      * Validates that the cart item exists and belongs to the customer before removal.
      */
-    public void removeFromCart(UUID customerId, UUID cartItemId) {
-        checkThatCustomerExists(customerId);
+    public void removeFromCart(UUID userId, UUID cartItemId) {
+        var customer = checkThatCustomerExists(userId);
+        var customerId = customer.getCustomerId();
 
         CartItem cartItem = cartStore.getCartItem(cartItemId)
                 .orElseThrow(() -> new CartItemNotFoundException(cartItemId.toString()));
@@ -99,9 +101,9 @@ public class CartService {
         cartStore.removeCartItem(cartItemId);
     }
 
-    private void checkThatCustomerExists(UUID customerId) {
-        customerStore.getCustomer(customerId).orElseThrow(
-                () -> new CustomerNotFoundException(customerId.toString())
+    private Customer checkThatCustomerExists(UUID userId) {
+        return customerStore.getCustomerByUserId(userId).orElseThrow(
+                () -> new CustomerNotFoundException(userId.toString())
         );
     }
 
@@ -109,13 +111,13 @@ public class CartService {
      * Update the quantity of a cart item in the customer's cart.
      * Validates that the cart item exists and belongs to the customer. Returns the updated cart item with full product details.
      */
-    public CartItemResponseDto updateCartItem(UUID customerId, UUID cartItemId, CartItemRequestDto request) {
-        checkThatCustomerExists(customerId);
+    public CartItemResponseDto updateCartItem(UUID userId, UUID cartItemId, CartItemRequestDto request) {
+        var customer = checkThatCustomerExists(userId);
 
         CartItem cartItem = cartStore.getCartItem(cartItemId)
                 .orElseThrow(() -> new CartItemNotFoundException(cartItemId.toString()));
 
-        checkCartItemAuthorization(customerId, cartItem);
+        checkCartItemAuthorization(customer.getCustomerId(), cartItem);
 
         cartStore.updateCartItem(cartItemId, request.getQuantity());
         return getUpdatedCartItem(cartItemId);
@@ -139,10 +141,10 @@ public class CartService {
      * Get all cart items for a customer.
      * Returns an empty list if the customer has no cart. Each cart item includes full product details.
      */
-    public List<CartItemResponseDto> getCartItemsByCustomer(UUID customerId) {
-        checkThatCustomerExists(customerId);
+    public List<CartItemResponseDto> getCartItemsByCustomer(UUID userId) {
+        var customer = checkThatCustomerExists(userId);
 
-        Optional<Cart> cartOpt = this.cartStore.getCartByCustomerId(customerId);
+        Optional<Cart> cartOpt = this.cartStore.getCartByCustomerId(customer.getCustomerId());
 
         if (cartOpt.isEmpty()) return List.of();
 

@@ -31,12 +31,13 @@ public class ReviewService {
      * Create a new review for a product.
      * Validates that the product exists, the customer exists, and the customer has ordered and received (PROCESSED status) the product.
      */
-    public ReviewResponseDto createReview(UUID productId, UUID customerId, ReviewRequestDto request) {
+    public ReviewResponseDto createReview(UUID productId, UUID userId, ReviewRequestDto request) {
         productStore.getProduct(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
 
-        customerStore.getCustomer(customerId)
-                .orElseThrow(() -> new CustomerNotFoundException(customerId.toString()));
+        var customer = customerStore.getCustomerByUserId(userId)
+                .orElseThrow(() -> new CustomerNotFoundException(userId.toString()));
+        var customerId = customer.getCustomerId();
 
         validateCustomerHasProcessedProduct(customerId, productId);
 

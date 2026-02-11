@@ -15,7 +15,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
-                .addPathPatterns("/api/v1/**")
+                .addPathPatterns("/api/v1/**", "/graphql")
                 .excludePathPatterns(
                         "/api/v1/auth/**",
                         "**/docs",

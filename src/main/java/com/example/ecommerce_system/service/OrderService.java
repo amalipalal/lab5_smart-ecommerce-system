@@ -135,9 +135,10 @@ public class OrderService {
      * Retrieves all orders for a customer with pagination.
      * Validates customer existence before fetching orders.
      */
-    public List<OrderResponseDto> getCustomerOrders(UUID customerId, int limit, int offset) {
-        customerStore.getCustomer(customerId).orElseThrow(
-                () -> new CustomerNotFoundException(customerId.toString()));
+    public List<OrderResponseDto> getCustomerOrders(UUID userId, int limit, int offset) {
+        var customer = customerStore.getCustomerByUserId(userId).orElseThrow(
+                () -> new CustomerNotFoundException(userId.toString()));
+        var customerId = customer.getCustomerId();
 
         List<Orders> orders = orderStore.getCustomerOrders(customerId, limit, offset);
         return orders.stream()
