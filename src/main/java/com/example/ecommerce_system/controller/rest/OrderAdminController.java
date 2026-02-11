@@ -1,5 +1,6 @@
 package com.example.ecommerce_system.controller.rest;
 
+import com.example.ecommerce_system.config.RequireAdmin;
 import com.example.ecommerce_system.dto.SuccessResponseDto;
 import com.example.ecommerce_system.dto.orders.OrderRequestDto;
 import com.example.ecommerce_system.dto.orders.OrderResponseDto;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class OrderAdminController {
     private final OrderService orderService;
 
+    @RequireAdmin
     @Operation(summary = "Retrieve all orders")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "All orders retrieved")
@@ -38,6 +40,7 @@ public class OrderAdminController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, orders);
     }
 
+    @RequireAdmin
     @Operation(summary = "Retrieve a single order by orderId")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "A single order retrieved"),
@@ -49,6 +52,7 @@ public class OrderAdminController {
         return SuccessResponseHandler.generateSuccessResponse(HttpStatus.OK, order);
     }
 
+    @RequireAdmin
     @Operation(summary = "Update order status by id")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order status updated"),
